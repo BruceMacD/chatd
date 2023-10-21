@@ -16,41 +16,24 @@ class ExtractorPipeline {
   }
 }
 
-class VectorStore {
-  static instance = null;
-
-  static async newInstance(embeddings) {
-    if (this.instance === null) {
-      const { VectorStore } = await import("vector-store");
-      this.instance = new VectorStore(embeddings);
-    }
-
-    return this.instance;
-  }
-
-  static async getInstance() {
-    if (this.instance === null) {
-      const { Voy } = await import("voy-search");
-      this.instance = new Voy();
-    }
-
-    return this.instance;
-  }
-}
-
 // The run function is used by the `transformers:embed` event handler.
-async function embed(event, content) {
-  console.log(`Embedding input `, content);
+async function embed(documents) {
   // Load the model
   const extractor = await ExtractorPipeline.getInstance();
 
-  const output = await extractor(content, {
-    pooling: "mean",
-    normalize: true,
-  });
-  console.log(output);
-  const embedding = Array.from(output.data);
-  console.log(`Embedding for input `, embedding);
+  // Extract the embeddings
+  var embeddings = [];
+  for (const document of documents) {
+    const output = await extractor(document, {
+      pooling: "mean",
+      normalize: true,
+    });
+    embeddings.push({
+      document: document,
+      embedding: Array.from(output.data),
+    });
+  }
+  return embeddings;
 }
 
 module.exports = {
