@@ -16,8 +16,31 @@ class ExtractorPipeline {
   }
 }
 
+class VectorStore {
+  static instance = null;
+
+  static async newInstance(embeddings) {
+    if (this.instance === null) {
+      const { VectorStore } = await import("vector-store");
+      this.instance = new VectorStore(embeddings);
+    }
+
+    return this.instance;
+  }
+
+  static async getInstance() {
+    if (this.instance === null) {
+      const { Voy } = await import("voy-search");
+      this.instance = new Voy();
+    }
+
+    return this.instance;
+  }
+}
+
 // The run function is used by the `transformers:embed` event handler.
 async function embed(event, content) {
+  console.log(`Embedding input `, content);
   // Load the model
   const extractor = await ExtractorPipeline.getInstance();
 
