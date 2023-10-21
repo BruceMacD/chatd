@@ -8,4 +8,11 @@ const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("electronAPI", {
   embed: (text) => ipcRenderer.invoke("transformers:run", text),
   sendGenerateRequest: (text) => ipcRenderer.invoke("ollama:generate", text),
+  invokeFilePicker: () => ipcRenderer.send("file:open"),
+  onFileDataReceived: (callback) => {
+    ipcRenderer.on("file:data", (event, data) => {
+      // when receiving the event, call the callback with the data in the renderer process
+      callback(event, data);
+    });
+  },
 });

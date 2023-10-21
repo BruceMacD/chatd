@@ -31,3 +31,19 @@ generateButton.addEventListener("click", async () => {
     outputElement.innerText = `Error: ${error.message}`;
   }
 });
+
+const openFileButton = document.getElementById("openFileBtn");
+
+openFileButton.addEventListener("click", () => {
+  window.electronAPI.invokeFilePicker();
+});
+
+window.electronAPI.onFileDataReceived((event, data) => {
+  // this callback recieves file data in the renderer process
+  console.log("Received file data:", data);
+  if (data.success) {
+    inputElement.value = data.content;
+  } else {
+    outputElement.innerText = `Error reading file: ${data.content}`;
+  }
+});

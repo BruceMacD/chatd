@@ -3,6 +3,7 @@ const path = require("path");
 const { session } = require("electron");
 const { embed } = require("./model.js");
 const { sendGenerateRequest } = require("./ollama.js");
+const { openFile } = require("./file.js");
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -35,6 +36,7 @@ app.on("ready", () => {
   // https://www.electronjs.org/docs/latest/tutorial/ipc#pattern-2-renderer-to-main-two-way
   ipcMain.handle("transformers:run", embed);
   ipcMain.handle("ollama:generate", sendGenerateRequest);
+  ipcMain.on("file:open", openFile);
 
   createWindow();
 
