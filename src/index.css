@@ -18,39 +18,51 @@ body {
     align-items: center;
 }
 
-/* Container & Elements inside it */
-.container {
-    width: 400px;
+input {
+    width: 100%;
+    padding: 8px 12px; /* Slight adjustment to padding */
+    font-size: 20px;
+    background-color: #181818; /* Obsidian's Dark Background */
+    margin-bottom: 16px;
+    color: #C8C8C8; /* Obsidian's Light Text */
+    border: none;
+}
+
+.chat {
+    width: 90%;
+    padding: 20px;
+}
+
+.history {
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.history-user-message {
+    width: 100%;
+    padding: 20px;
+    background-color: #181818; /* Obsidian's Dark Background */
+}
+
+.history-chat-response {
+    width: 100%;
     border-radius: 4px;
     background-color: #202020; /* Slightly different dark background */
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-#text {
+.user-message {
     width: 100%;
-    padding: 8px 12px; /* Slight adjustment to padding */
-    font-size: 20px;
-    background-color: #252525; /* Darker input background */
-    border: 1px solid #333; /* Subtle border */
-    border-radius: 4px;
-    color: #C8C8C8;
-    margin-bottom: 16px;
-    transition: border-color 0.3s;
+    background-color: #202020; /* Slightly different dark background */
+    padding: 20px;
 }
 
-#text:focus {
-    border-color: #6699CC; /* Obsidian's primary accent color */
+.user-input {
+    width: 100%;
+}
+
+#user-input-text:focus {
+    border: none;
     outline: none;
-}
-
-#output {
-    font-size: 20px;
-    font-family: 'Roboto Mono', monospace;
-    height: 100px;
-    background-color: #252525; /* Darker background for the output */
-    border-radius: 4px;
-    padding: 8px 12px; /* Consistent padding with input */
-    overflow: auto; /* In case the text overflows */
-    white-space: pre-wrap; /* Wraps the text inside */
 }
