@@ -54,7 +54,7 @@ window.electronAPI.onChatReply((event, data) => {
 openFileButton.addEventListener("click", () => {
   openFileErrMsg.innerText = "";
   window.electronAPI.newChat();
-  // Hide the initial view and show the chat view
+  // Hide the initial view and show the chat view once loaded
 });
 
 window.electronAPI.onChatLoaded((event, data) => {
@@ -64,6 +64,7 @@ window.electronAPI.onChatLoaded((event, data) => {
   }
   document.getElementById("initial-view").style.display = "none";
   document.getElementById("chat-view").style.display = "block";
+  userInput.focus();
 });
 
 // document.getElementById("goBack").addEventListener("click", function () {
