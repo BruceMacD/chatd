@@ -3,7 +3,7 @@
 
 const userInput = document.getElementById("user-input-text");
 const historyContainer = document.getElementById("history");
-const openFileButton = document.getElementById("openFileBtn");
+const openFileButton = document.getElementById("file-open");
 
 userInput.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
@@ -58,3 +58,16 @@ window.electronAPI.onChatLoaded((event, data) => {
   // this callback receives file data in the renderer process
   console.log("Chat loaded:", data);
 });
+
+document.getElementById("file-open").addEventListener("click", function () {
+  console.log("file-open");
+  // Hide the initial view and show the chat view
+  document.getElementById("initial-view").style.display = "none";
+  document.getElementById("chat-view").style.display = "block";
+});
+
+// document.getElementById("goBack").addEventListener("click", function () {
+//   // Hide the chat view and show the initial view
+//   document.getElementById("chat-view").style.display = "none";
+//   document.getElementById("initial-view").style.display = "block";
+// });

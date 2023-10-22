@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Lector</title>
+    <title>chatd</title>
 
     <link rel="stylesheet" href="index.css" />
 
@@ -11,13 +11,31 @@
 </head>
 
 <body>
-    <div class="chat-container">
+    <!-- Initial View -->
+    <div id="initial-view">
+        <h1>chatd</h1>
+        <button id="file-open">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Folder Shape -->
+                <path class="folder-shape" fill="#C8C8C8"
+                    d="M2 6c0-1.1.9-2 2-2h6l2 2h8c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6z" />
+                <!-- Plus Sign  -->
+                <path class="plus-sign" d="M12 11V17" stroke="white" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                <path class="plus-sign" d="M9.5 14H14.5" stroke="white" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round" />
+            </svg>
+            <span class="button-text">Open a File</span>
+        </button>
+    </div>
+
+    <!-- Chat View (Initially Hidden) -->
+    <div id="chat-view">
         <div class="chat">
             <div id="history"></div>
             <div class="user-input">
                 <input id="user-input-text" placeholder="Ask a question, then press enter..." autofocus>
             </div>
-            <button id="openFileBtn">Open File</button>
         </div>
     </div>
 </body>
