@@ -4,6 +4,7 @@
 const userInput = document.getElementById("user-input-text");
 const historyContainer = document.getElementById("history");
 const openFileButton = document.getElementById("file-open");
+const openFileErrMsg = document.getElementById("file-open-err-msg");
 
 userInput.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
@@ -51,17 +52,16 @@ window.electronAPI.onChatReply((event, data) => {
 });
 
 openFileButton.addEventListener("click", () => {
+  openFileErrMsg.innerText = "";
   window.electronAPI.newChat();
+  // Hide the initial view and show the chat view
 });
 
 window.electronAPI.onChatLoaded((event, data) => {
-  // this callback receives file data in the renderer process
-  console.log("Chat loaded:", data);
-});
-
-document.getElementById("file-open").addEventListener("click", function () {
-  console.log("file-open");
-  // Hide the initial view and show the chat view
+  if (!data.success) {
+    openFileErrMsg.innerText = data.content;
+    return;
+  }
   document.getElementById("initial-view").style.display = "none";
   document.getElementById("chat-view").style.display = "block";
 });
