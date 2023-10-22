@@ -23,17 +23,21 @@ class MemoryVectorStore {
     }
   }
 
-  static async fromEmbeddings(embeddings) {
-    if (this.instance === null) {
-      this.instance = new this();
-      await this.instance.addEmbeddings(embeddings);
-    }
-    return this.instance;
+  static async reloadMemoryVectorStore() {
+    return (this.instance = new this());
   }
 
   static async getMemoryVectorStore() {
     if (this.instance === null) {
       this.instance = new this();
+    }
+    return this.instance;
+  }
+
+  static async fromEmbeddings(embeddings) {
+    if (this.instance === null) {
+      this.instance = new this();
+      await this.instance.addEmbeddings(embeddings);
     }
     return this.instance;
   }
@@ -57,6 +61,10 @@ class MemoryVectorStore {
   }
 }
 
+async function reloadVectorStore() {
+  return await MemoryVectorStore.reloadMemoryVectorStore();
+}
+
 async function store(embeddings) {
   return await MemoryVectorStore.fromEmbeddings(embeddings);
 }
@@ -67,6 +75,7 @@ async function search(embedding, k) {
 }
 
 module.exports = {
+  reloadVectorStore,
   store,
   search,
 };
