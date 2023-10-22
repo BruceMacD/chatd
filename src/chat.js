@@ -3,7 +3,7 @@ const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
 const { openFile } = require("./service/file.js");
 const { embed } = require("./service/embedding.js");
 const { store, search, clearVectorStore } = require("./service/vector.js");
-const { generate, reloadOllama } = require("./service/ollama.js");
+const { generate, ping, reloadOllama } = require("./service/ollama.js");
 
 async function sendChat(event, msg) {
   try {
@@ -72,7 +72,19 @@ async function newChat(event) {
   }
 }
 
+async function loadLLM(event) {
+  try {
+    // see if ollama is already running
+    await ping();
+    event.reply("llm:load", { success: true, content: "system" });
+  } catch (err) {
+    console.log(err);
+    event.reply("llm:load", { success: false, content: err.message });
+  }
+}
+
 module.exports = {
   newChat,
-  sendChat: sendChat,
+  sendChat,
+  loadLLM,
 };

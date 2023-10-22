@@ -8,6 +8,22 @@ const openFileErrMsg = document.getElementById("file-open-err-msg");
 
 let responseElem;
 
+// start the LLM back-end
+window.electronAPI.loadLLM();
+
+window.electronAPI.onLLMLoaded((event, data) => {
+  if (!data.success) {
+    console.log("LLM failed to load");
+    return;
+  }
+  if (data.content === "system") {
+    // Ollama was already running, and we just connected to it
+    document.getElementById("status-container").style.display = "flex";
+  }
+  // pre-load the model here
+  console.log("LLM loaded");
+});
+
 userInput.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
     event.preventDefault();

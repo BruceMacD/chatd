@@ -41,6 +41,24 @@ class Ollama {
   }
 
   /**
+   * Sends a ping to the LLM to see if it is running.
+   */
+  async ping() {
+    const response = await fetch(this.host, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (response.status !== 200) {
+      throw new Error("Failed to ping Ollama server");
+    }
+
+    console.log("Ollama server is running");
+
+    return true;
+  }
+
+  /**
    * Sends a prompt to the LLM, parses the stream and runs a callback.
    *
    * @param {string}   model   One of the installed models to use, e.g: 'llama2'.
@@ -66,7 +84,7 @@ class Ollama {
     });
 
     // Sends the request to the server
-    const response = await fetch("http://127.0.0.1:11434/api/generate", {
+    const response = await fetch(this.host + "/api/generate", {
       method: "POST",
       body,
       cache: "no-store",
@@ -115,11 +133,17 @@ async function generate(model, prompt, fn) {
   return await ollama.generate(model, prompt, fn);
 }
 
+async function ping() {
+  const ollama = Ollama.getOllama();
+  return await ollama.ping();
+}
+
 function reloadOllama() {
   return Ollama.reload();
 }
 
 module.exports = {
   generate,
+  ping,
   reloadOllama,
 };

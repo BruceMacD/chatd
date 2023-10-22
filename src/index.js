@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { session } = require("electron");
-const { newChat, sendChat } = require("./chat.js");
+const { newChat, sendChat, loadLLM } = require("./chat.js");
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -29,11 +29,12 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
-  // Add a handler for the `transformers:run` event. This enables 2-way communication
-  // between the renderer process (UI) and the main process (processing).
+  // Add a handler for the interprocess events. This enables 2-way communication
+  // between the renderer process (UI) and the main process.
   // https://www.electronjs.org/docs/latest/tutorial/ipc#pattern-2-renderer-to-main-two-way
   ipcMain.on("chat:send", sendChat);
   ipcMain.on("chat:new", newChat);
+  ipcMain.on("llm:load", loadLLM);
 
   createWindow();
 
