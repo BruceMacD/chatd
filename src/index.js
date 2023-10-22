@@ -32,7 +32,7 @@ app.on("ready", () => {
   // Add a handler for the `transformers:run` event. This enables 2-way communication
   // between the renderer process (UI) and the main process (processing).
   // https://www.electronjs.org/docs/latest/tutorial/ipc#pattern-2-renderer-to-main-two-way
-  ipcMain.handle("chat:send", sendChat);
+  ipcMain.on("chat:send", sendChat);
   ipcMain.on("chat:new", newChat);
 
   createWindow();

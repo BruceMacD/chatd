@@ -3,9 +3,22 @@ const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
 const { openFile } = require("./service/file.js");
 const { embed } = require("./service/embedding.js");
 const { store, search } = require("./service/vector.js");
+const { generate } = require("./service/ollama.js");
 
-async function sendChat(event) {
-  event.reply("chat:reply", { success: true, content: "TODO" });
+async function sendChat(event, msg) {
+  try {
+    // TODO: add embeddings to the prompt
+    // const embeddings = await embed([msg]);
+    // const results = await search(embeddings[0].embedding, 5);
+
+    await generate("mistral", msg, (json) => {
+      // Reply with the content every time we receive data
+      event.reply("chat:reply", { success: true, content: json });
+    });
+  } catch (err) {
+    console.log(err);
+    event.reply("chat:reply", { success: false, content: err.message });
+  }
 }
 
 async function newChat(event) {
@@ -32,11 +45,7 @@ async function newChat(event) {
     // store the embeddings
     await store(embeddings);
 
-    // TODO: remove this, just for testing
-    const queries = await embed(["Conservation"]);
-    const results = await search(queries[0].embedding, 2);
-    console.log(results);
-    event.reply("chat:load", { success: true, doc });
+    event.reply("chat:load", { success: true, content: "success" });
   } catch (err) {
     console.log(err);
     event.reply("chat:load", { success: false, content: err.message });

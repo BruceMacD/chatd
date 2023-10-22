@@ -6,11 +6,15 @@ const { contextBridge, ipcRenderer } = require("electron");
 // Here, we use the `contextBridge` API to expose a custom API to the renderer process.
 // This API allows the renderer process to invoke the `transformers:run` event in the main process.
 contextBridge.exposeInMainWorld("electronAPI", {
-  sendChat: (text) => ipcRenderer.invoke("chat:send", text),
+  sendChat: (text) => ipcRenderer.send("chat:send", text),
+  onChatReply: (callback) => {
+    ipcRenderer.on("chat:reply", (event, data) => {
+      callback(event, data);
+    });
+  },
   newChat: () => ipcRenderer.send("chat:new"),
   onChatLoaded: (callback) => {
     ipcRenderer.on("chat:load", (event, data) => {
-      // when receiving the event, call the callback with the data in the renderer process
       callback(event, data);
     });
   },

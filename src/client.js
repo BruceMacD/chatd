@@ -3,7 +3,6 @@
 
 const userInput = document.getElementById("user-input-text");
 const historyContainer = document.getElementById("history");
-// const outputElement = document.getElementById("output");
 const openFileButton = document.getElementById("openFileBtn");
 
 userInput.addEventListener("keydown", function (event) {
@@ -13,21 +12,39 @@ userInput.addEventListener("keydown", function (event) {
     userInput.disabled = true;
     userInput.placeholder = "";
 
+    const message = userInput.value;
+    userInput.value = "";
+
     // Create a new text block
     const historyMessage = document.createElement("div");
     historyMessage.className = "history-user-message";
-    historyMessage.innerText = userInput.value;
+    historyMessage.innerText = message;
     historyContainer.appendChild(historyMessage);
-    // Clear current input
-    userInput.value = "";
 
-    // Chat processing goes here
-    // window.electronAPI.processChat(historyMessage.innerText);
-    const response = document.createElement("div");
-    response.className = "history-chat-response";
-    response.innerText = "hi";
-    historyContainer.appendChild(response);
+    // Reset responseElem
+    responseElem = document.createElement("div");
+    responseElem.className = "history-chat-response";
 
+    // Send chat to Ollama server
+    window.electronAPI.sendChat(message);
+  }
+});
+
+let responseElem;
+
+window.electronAPI.onChatReply((event, data) => {
+  // Check if the responseElem doesn't exist or isn't in the DOM
+  if (!responseElem || !document.body.contains(responseElem)) {
+    responseElem = document.createElement("div");
+    responseElem.className = "history-chat-response";
+    historyContainer.appendChild(responseElem); // Append to history right away
+  }
+
+  // Append new content to the persistent responseElem's innerText
+  const resp = data.success ? data.content : "Error: " + data.content;
+  responseElem.innerText += resp.response; // Append to existing text
+
+  if (resp.done) {
     userInput.disabled = false;
     userInput.focus();
   }
@@ -37,12 +54,7 @@ openFileButton.addEventListener("click", () => {
   window.electronAPI.newChat();
 });
 
-// window.electronAPI.onChatLoaded((event, data) => {
-//   // this callback recieves file data in the renderer process
-//   console.log("Chat loaded:", data);
-//   if (data.success) {
-//     outputElement.innerText = data.content;
-//   } else {
-//     outputElement.innerText = `Error starting chat: ${data.content}`;
-//   }
-// });
+window.electronAPI.onChatLoaded((event, data) => {
+  // this callback receives file data in the renderer process
+  console.log("Chat loaded:", data);
+});

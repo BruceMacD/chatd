@@ -34,7 +34,7 @@ const parse = (value) => {
  *
  * @return {Promise<undefined>}
  */
-const sendGenerateRequest = async (event, model, prompt, fn) => {
+const generate = async (model, prompt, fn) => {
   // Throws an {AbortError} when the request was not finished
   // NOTE: the application is supposed to mitigate this from happening
   abortGenerateRequest();
@@ -42,8 +42,8 @@ const sendGenerateRequest = async (event, model, prompt, fn) => {
 
   // Stringifies the JSON request body
   const body = JSON.stringify({
-    model: "mistral",
-    prompt: "hello world",
+    model: model,
+    prompt: prompt,
     options: {},
   });
 
@@ -77,19 +77,13 @@ const sendGenerateRequest = async (event, model, prompt, fn) => {
       throw new Error("Failed to fulfill prompt");
     }
 
-    // Processes each new line received from the server
+    // Parse responses are they are received from the Ollama server
     for (const buffer of parse(value)) {
-      // Parses the text buffer into a JSON object
       const json = JSON.parse(buffer);
 
-      console.log(json);
+      fn(json);
 
-      // Execute the callback and pass the parsed object as an argument
-      //   fn(json);
-
-      // The last buffer that we expect
       if (json.done) {
-        // Breaks out of the while-loop
         return;
       }
     }
@@ -97,5 +91,5 @@ const sendGenerateRequest = async (event, model, prompt, fn) => {
 };
 
 module.exports = {
-  sendGenerateRequest,
+  generate,
 };
