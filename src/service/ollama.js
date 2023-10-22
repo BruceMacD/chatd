@@ -102,7 +102,6 @@ class Ollama {
         fn(json);
 
         if (json.done) {
-          console.log(json);
           this.context = json.context;
           return;
         }
