@@ -7,11 +7,26 @@ const { generate } = require("./service/ollama.js");
 
 async function sendChat(event, msg) {
   try {
-    // TODO: add embeddings to the prompt
-    // const embeddings = await embed([msg]);
-    // const results = await search(embeddings[0].embedding, 5);
+    const msgEmbeds = await embed([msg]);
+    const searchResult = await search(msgEmbeds[0].embedding, 3);
+    // format the system context search results
+    const contextString = searchResult.join("\n\n");
 
-    await generate("mistral", msg, (json) => {
+    const prompt = `[INST] Using the provided context, answer the user question to the best of your ability. You must only use information from the provided context. Combine context into a coherent answer.
+If there is nothing in the context relevant to the user question, just say "Hmm, I don't see anything about that in this document." Don't try to make up an answer.
+Anything between the following \`context\` html blocks is retrieved from a knowledge bank, not part of the conversation with the user.
+<context>
+    ${contextString}
+<context/>
+
+If there is no relevant information within the context, just say "Hmm, I don't see anything about that in this document." Don't try to make up an answer. Anything between the preceding 'context' html blocks is retrieved from a knowledge bank, not part of the conversation with the user.
+
+Anything between the following \`user\` html blocks is is part of the conversation with the user.
+<user>
+  ${msg}
+</user> [/INST]`;
+
+    await generate("mistral", prompt, (json) => {
       // Reply with the content every time we receive data
       event.reply("chat:reply", { success: true, content: json });
     });
@@ -26,7 +41,7 @@ async function newChat(event) {
     // read the document
     const doc = await openFile();
 
-    // split the document date for retrieval
+    // split the document content for retrieval
     const splitter = new RecursiveCharacterTextSplitter({
       chunkSize: 500,
       chunkOverlap: 50,
