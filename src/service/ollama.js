@@ -7,14 +7,14 @@ class Ollama {
     this.host = "http://127.0.0.1:11434";
   }
 
-  static async getOllama() {
+  static getOllama() {
     if (this.instance === null) {
       this.instance = new this();
     }
     return this.instance;
   }
 
-  static async reload() {
+  static reload() {
     this.instance = new this();
   }
 
@@ -112,12 +112,12 @@ class Ollama {
 }
 
 async function generate(model, prompt, fn) {
-  const ollama = await Ollama.getOllama();
+  const ollama = Ollama.getOllama();
   return await ollama.generate(model, prompt, fn);
 }
 
-async function reloadOllama() {
-  return await Ollama.reload();
+function reloadOllama() {
+  return Ollama.reload();
 }
 
 module.exports = {

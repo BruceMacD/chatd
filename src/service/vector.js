@@ -23,33 +23,33 @@ class MemoryVectorStore {
     }
   }
 
-  static async reloadMemoryVectorStore() {
-    return (this.instance = new this());
+  static clear() {
+    this.memoryVectors = [];
   }
 
-  static async getMemoryVectorStore() {
+  static getMemoryVectorStore() {
     if (this.instance === null) {
       this.instance = new this();
     }
     return this.instance;
   }
 
-  static async fromEmbeddings(embeddings) {
+  static fromEmbeddings(embeddings) {
     if (this.instance === null) {
       this.instance = new this();
-      await this.instance.addEmbeddings(embeddings);
+      this.instance.addEmbeddings(embeddings);
     }
     return this.instance;
   }
 
-  async addEmbeddings(embeddings) {
+  addEmbeddings(embeddings) {
     const memoryVectors = embeddings.map((item) => {
       return new MemoryVector(item.document, item.embedding);
     });
     this.memoryVectors = this.memoryVectors.concat(memoryVectors);
   }
 
-  async similaritySearchVector(query, k) {
+  similaritySearchVector(query, k) {
     const results = this.memoryVectors.map((vector) => ({
       similarity: this.similarity(query, vector.embedding),
       document: vector.document,
@@ -61,21 +61,21 @@ class MemoryVectorStore {
   }
 }
 
-async function reloadVectorStore() {
-  return await MemoryVectorStore.reloadMemoryVectorStore();
+function clearVectorStore() {
+  return MemoryVectorStore.clear();
 }
 
 async function store(embeddings) {
-  return await MemoryVectorStore.fromEmbeddings(embeddings);
+  return MemoryVectorStore.fromEmbeddings(embeddings);
 }
 
-async function search(embedding, k) {
-  const store = await MemoryVectorStore.getMemoryVectorStore();
-  return await store.similaritySearchVector(embedding, k);
+function search(embedding, k) {
+  const store = MemoryVectorStore.getMemoryVectorStore();
+  return store.similaritySearchVector(embedding, k);
 }
 
 module.exports = {
-  reloadVectorStore,
+  clearVectorStore,
   store,
   search,
 };

@@ -2,13 +2,18 @@ const { Document } = require("langchain/document");
 const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
 const { openFile } = require("./service/file.js");
 const { embed } = require("./service/embedding.js");
-const { store, search, reloadVectorStore } = require("./service/vector.js");
+const {
+  store,
+  search,
+  reloadVectorStore,
+  clearVectorStore,
+} = require("./service/vector.js");
 const { generate, reloadOllama } = require("./service/ollama.js");
 
 async function sendDocumentChat(event, msg) {
   try {
     const msgEmbeds = await embed([msg]);
-    const searchResult = await search(msgEmbeds[0].embedding, 3);
+    const searchResult = search(msgEmbeds[0].embedding, 3);
     // format the system context search results
     const contextString = searchResult.join("\n\n");
 
@@ -39,8 +44,9 @@ Anything between the following \`user\` html blocks is is part of the conversati
 async function newChat(event) {
   try {
     // reload the services to clear any previous state
-    await reloadVectorStore();
-    await reloadOllama();
+    // await reloadVectorStore();
+    clearVectorStore();
+    reloadOllama();
 
     // read the document
     const doc = await openFile();
@@ -62,7 +68,7 @@ async function newChat(event) {
     const embeddings = await embed(texts);
 
     // store the embeddings
-    await store(embeddings);
+    store(embeddings);
 
     event.reply("chat:load", { success: true, content: "success" });
   } catch (err) {
