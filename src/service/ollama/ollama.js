@@ -1,5 +1,9 @@
+const path = require("path");
+const { exec } = require("child_process");
+
 var OllamaRunType = {
   SYSTEM: "system",
+  PACKAGED: "packaged",
 };
 
 class Ollama {
@@ -35,25 +39,55 @@ class Ollama {
     }
     try {
       // See if 'ollama run' command is available on the system
+      return await this.runSystem();
+    } catch (err) {
+      // ollama is not installed, run the binary directly
+      console.log(`exec ollama: ${err}`);
+    }
+
+    // start the ollama packaged ollama server
+    try {
+      const pathToBinary = path.join(__dirname, "runners", "ollama-darwin");
+      exec(`${pathToBinary} serve`, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error executing ollama-darwin: ${error}`);
+          return;
+        }
+        console.log(stdout);
+        if (stderr) {
+          console.warn(`Warnings from ollama-darwin: ${stderr}`);
+        }
+
+        return OllamaRunType.PACKAGED;
+      });
+    } catch (err) {
+      throw new Error(`Failed to start ollama server: ${err}`);
+    }
+  }
+
+  // runs ollama if it is already installed
+  async runSystem() {
+    return new Promise((resolve, reject) => {
       exec("ollama run mistral", (error, stdout, stderr) => {
         if (error) {
-          throw new Error(`exec error: ${error}`);
+          reject(new Error(`exec error: ${error}`));
+          return;
         }
 
         if (stderr) {
-          throw new Error(`ollama stderr: ${stderr}`);
+          reject(new Error(`ollama stderr: ${stderr}`));
+          return;
         }
 
         console.log(`stdout: ${stdout}`);
         if (stdout.includes("Error")) {
-          throw new Error(`ollama stdout: ${stdout}`);
+          reject(new Error(`ollama stdout: ${stdout}`));
+          return;
         }
 
-        return OllamaRunType.SYSTEM;
+        resolve(OllamaRunType.SYSTEM);
       });
-    } catch (err) {
-      console.log(`exec ollama: ${err}`);
-    }
+    });
   }
 
   static reload() {
