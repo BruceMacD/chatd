@@ -90,3 +90,6 @@ typings/
 
 # Electron-Forge
 out/
+
+# this is where large ollama executables are stored
+src/service/ollama/runners
