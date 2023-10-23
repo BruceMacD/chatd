@@ -1,8 +1,8 @@
 {
-  "name": "electron",
-  "productName": "electron",
+  "name": "chatd",
+  "productName": "chatd",
   "version": "1.0.0",
-  "description": "Transformers.js sample Electron application",
+  "description": "Chat with your documents using local AI",
   "main": "src/index.js",
   "scripts": {
     "start": "electron-forge start",

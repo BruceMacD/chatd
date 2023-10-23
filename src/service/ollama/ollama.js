@@ -12,6 +12,7 @@ class Ollama {
 
   constructor() {
     this.abortController = null;
+    this.childProcess = null;
     this.host = "http://127.0.0.1:11434";
   }
 
@@ -62,18 +63,21 @@ class Ollama {
           throw new Error("Unsupported platform:", process.platform);
       }
       const pathToBinary = path.join(__dirname, "runners", exe);
-      exec(`${pathToBinary} serve`, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Error executing ollama-darwin: ${error}`);
-          return;
-        }
-        console.log(stdout);
-        if (stderr) {
-          console.warn(`Warnings from ollama-darwin: ${stderr}`);
-        }
+      this.childProcess = exec(
+        `${pathToBinary} serve`,
+        (error, stdout, stderr) => {
+          if (error) {
+            console.error(`Error executing ollama-darwin: ${error}`);
+            return;
+          }
+          console.log(stdout);
+          if (stderr) {
+            console.warn(`Warnings from ollama-darwin: ${stderr}`);
+          }
 
-        return OllamaRunType.PACKAGED;
-      });
+          return OllamaRunType.PACKAGED;
+        }
+      );
     } catch (err) {
       throw new Error(`Failed to start ollama server: ${err}`);
     }
@@ -104,7 +108,15 @@ class Ollama {
     });
   }
 
+  stop() {
+    if (this.childProcess) {
+      this.childProcess.kill();
+      this.childProcess = null;
+    }
+  }
+
   static reload() {
+    // TODO: change this to just drop the context
     this.instance = new this();
   }
 
@@ -229,7 +241,12 @@ async function ping() {
 }
 
 function reloadOllama() {
-  return Ollama.reload();
+  return; // TODO
+}
+
+function stopOllama() {
+  const ollama = Ollama.getOllama();
+  return ollama.stop();
 }
 
 function runOllama() {
@@ -241,5 +258,6 @@ module.exports = {
   generate,
   ping,
   reloadOllama,
+  stopOllama,
   runOllama,
 };

@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { session } = require("electron");
-const { newChat, sendChat, loadLLM } = require("./chat.js");
+const { newChat, sendChat, loadLLM, stopLLM } = require("./chat.js");
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -35,6 +35,7 @@ app.on("ready", () => {
   ipcMain.on("chat:send", sendChat);
   ipcMain.on("chat:new", newChat);
   ipcMain.on("llm:load", loadLLM);
+  ipcMain.on("llm:stop", stopLLM);
 
   createWindow();
 
@@ -53,6 +54,8 @@ app.on("ready", () => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
+  // Stop the ollama server when the app is closed
+  stopLLM();
   if (process.platform !== "darwin") {
     app.quit();
   }

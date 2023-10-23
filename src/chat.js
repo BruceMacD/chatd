@@ -5,8 +5,8 @@ const { embed } = require("./service/embedding.js");
 const { store, search, clearVectorStore } = require("./service/vector.js");
 const {
   generate,
-  ping,
   reloadOllama,
+  stopOllama,
   runOllama,
 } = require("./service/ollama/ollama.js");
 const { exec } = require("child_process");
@@ -89,8 +89,13 @@ async function loadLLM(event) {
   }
 }
 
+function stopLLM(event) {
+  stopOllama();
+}
+
 module.exports = {
   newChat,
   sendChat,
   loadLLM,
+  stopLLM,
 };
