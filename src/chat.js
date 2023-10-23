@@ -4,6 +4,7 @@ const { openFile } = require("./service/file.js");
 const { embed } = require("./service/embedding.js");
 const { store, search, clearVectorStore } = require("./service/vector.js");
 const { generate, ping, reloadOllama } = require("./service/ollama.js");
+const { exec } = require("child_process");
 
 async function sendChat(event, msg) {
   try {
@@ -25,6 +26,8 @@ Anything between the following \`user\` html blocks is is part of the conversati
 <user>
   ${msg}
 </user> [/INST]`;
+
+    console.log(prompt);
 
     await generate("mistral", prompt, (json) => {
       // Reply with the content every time we receive data
@@ -77,6 +80,43 @@ async function loadLLM(event) {
     // see if ollama is already running
     await ping();
     event.reply("llm:load", { success: true, content: "system" });
+    return;
+  } catch (err) {
+    // this is fine, we just need to start ollama
+    console.log(err);
+  }
+  try {
+    // See if 'ollama run' command is available
+    exec("ollama run mistral", (error, stdout, stderr) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        event.reply("llm:load", {
+          success: false,
+          content: `exec error: ${error}`,
+        });
+        return;
+      }
+
+      if (stderr) {
+        console.error(`stderr: ${stderr}`);
+        event.reply("llm:load", {
+          success: false,
+          content: `Error: ${stdout}`,
+        });
+        return;
+      }
+
+      console.log(`stdout: ${stdout}`);
+      if (stdout.includes("Error")) {
+        event.reply("llm:load", {
+          success: false,
+          content: `Error: ${stdout}`,
+        });
+        return;
+      }
+
+      event.reply("llm:load", { success: true, content: "system" });
+    });
   } catch (err) {
     console.log(err);
     event.reply("llm:load", { success: false, content: err.message });
