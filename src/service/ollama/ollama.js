@@ -52,7 +52,7 @@ class Ollama {
         return OllamaRunType.SYSTEM;
       });
     } catch (err) {
-      throw new Error(`exec ollama: ${err.message}`);
+      console.log(`exec ollama: ${err}`);
     }
   }
 
