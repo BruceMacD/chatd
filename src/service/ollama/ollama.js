@@ -47,7 +47,21 @@ class Ollama {
 
     // start the ollama packaged ollama server
     try {
-      const pathToBinary = path.join(__dirname, "runners", "ollama-darwin");
+      const exe = "";
+      switch (process.platform) {
+        case "win32":
+          exe = "ollama.exe";
+          break;
+        case "darwin":
+          exe = "ollama-darwin";
+          break;
+        case "linux":
+          exe = "ollama-linux-" + process.arch;
+          break;
+        default:
+          throw new Error("Unsupported platform:", process.platform);
+      }
+      const pathToBinary = path.join(__dirname, "runners", exe);
       exec(`${pathToBinary} serve`, (error, stdout, stderr) => {
         if (error) {
           console.error(`Error executing ollama-darwin: ${error}`);
