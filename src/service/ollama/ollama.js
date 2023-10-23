@@ -47,7 +47,7 @@ class Ollama {
 
     // start the ollama packaged ollama server
     try {
-      const exe = "";
+      let exe = "";
       switch (process.platform) {
         case "win32":
           exe = "ollama.exe";
