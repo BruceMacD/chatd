@@ -1,3 +1,7 @@
+var OllamaRunType = {
+  SYSTEM: "system",
+};
+
 class Ollama {
   static instance = null;
   static context = null; // stores the chat history for the current session
@@ -12,6 +16,44 @@ class Ollama {
       this.instance = new this();
     }
     return this.instance;
+  }
+
+  /**
+   * Run Ollama to serve an LLM.
+   *
+   * @throws {Error}
+   * @return {OllamaStatus} The status of the Ollama server.
+   */
+  async run() {
+    try {
+      // see if ollama is already running
+      await this.ping();
+      return OllamaRunType.SYSTEM;
+    } catch (err) {
+      // this is fine, we just need to start ollama
+      console.log(err);
+    }
+    try {
+      // See if 'ollama run' command is available on the system
+      exec("ollama run mistral", (error, stdout, stderr) => {
+        if (error) {
+          throw new Error(`exec error: ${error}`);
+        }
+
+        if (stderr) {
+          throw new Error(`ollama stderr: ${stderr}`);
+        }
+
+        console.log(`stdout: ${stdout}`);
+        if (stdout.includes("Error")) {
+          throw new Error(`ollama stdout: ${stdout}`);
+        }
+
+        return OllamaRunType.SYSTEM;
+      });
+    } catch (err) {
+      throw new Error(`exec ollama: ${err.message}`);
+    }
   }
 
   static reload() {
@@ -142,8 +184,14 @@ function reloadOllama() {
   return Ollama.reload();
 }
 
+function runOllama() {
+  const ollama = Ollama.getOllama();
+  return ollama.run();
+}
+
 module.exports = {
   generate,
   ping,
   reloadOllama,
+  runOllama,
 };

@@ -13,7 +13,7 @@ window.electronAPI.loadLLM();
 
 window.electronAPI.onLLMLoaded((event, data) => {
   if (!data.success) {
-    console.log("LLM failed to load");
+    console.log(data.content);
     return;
   }
   if (data.content === "system") {
