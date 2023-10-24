@@ -1,7 +1,13 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { session } = require("electron");
-const { newChat, sendChat, loadLLM, stopLLM } = require("./chat.js");
+const {
+  newChat,
+  sendChat,
+  loadLLM,
+  stopLLM,
+  loadDocument,
+} = require("./chat.js");
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -34,6 +40,7 @@ app.on("ready", () => {
   // https://www.electronjs.org/docs/latest/tutorial/ipc#pattern-2-renderer-to-main-two-way
   ipcMain.on("chat:send", sendChat);
   ipcMain.on("chat:new", newChat);
+  ipcMain.on("doc:load", loadDocument);
   ipcMain.on("llm:load", loadLLM);
   ipcMain.on("llm:stop", stopLLM);
 

@@ -11,9 +11,13 @@
 </head>
 
 <body>
-    <!-- Initial View -->
+    <!-- Initial Loading View -->
     <div id="initial-view">
         <img id="app-logo" src="../public/dark-logo.png" alt="App Logo" />
+    </div>
+
+    <!-- Chat View (Initially Hidden) -->
+    <div id="chat-view">
         <button id="file-open">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <!-- Folder Shape -->
@@ -29,6 +33,13 @@
         </button>
         <span id="file-open-err-msg"></span>
 
+        <div class="chat">
+            <div id="history"></div>
+            <div class="user-input">
+                <input id="user-input-text" placeholder="Ask a question, then press enter..." autofocus>
+            </div>
+        </div>
+
         <!-- Checkmark and Status Message if Ollama is already installed and running -->
         <div id="status-container">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -36,16 +47,6 @@
                 <path d="M7 12L10 15L17 8" stroke="#C8C8C8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span>ollama is running</span>
-        </div>
-    </div>
-
-    <!-- Chat View (Initially Hidden) -->
-    <div id="chat-view">
-        <div class="chat">
-            <div id="history"></div>
-            <div class="user-input">
-                <input id="user-input-text" placeholder="Ask a question, then press enter..." autofocus>
-            </div>
         </div>
     </div>
 </body>

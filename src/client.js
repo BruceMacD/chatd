@@ -13,6 +13,7 @@ window.electronAPI.loadLLM();
 
 window.electronAPI.onLLMLoaded((event, data) => {
   if (!data.success) {
+    // TODO: show error message
     console.log(data.content);
     return;
   }
@@ -22,6 +23,18 @@ window.electronAPI.onLLMLoaded((event, data) => {
   }
   // pre-load the model here
   console.log("LLM loaded");
+  // finish by starting a new chat
+  window.electronAPI.newChat();
+});
+
+window.electronAPI.onChatLoaded((event, data) => {
+  if (!data.success) {
+    openFileErrMsg.innerText = data.content;
+    return;
+  }
+  document.getElementById("initial-view").style.display = "none";
+  document.getElementById("chat-view").style.display = "block";
+  userInput.focus();
 });
 
 userInput.addEventListener("keydown", function (event) {
@@ -82,22 +95,5 @@ window.electronAPI.onChatReply((event, data) => {
 
 openFileButton.addEventListener("click", () => {
   openFileErrMsg.innerText = "";
-  window.electronAPI.newChat();
-  // Hide the initial view and show the chat view once loaded
+  window.electronAPI.loadDocument();
 });
-
-window.electronAPI.onChatLoaded((event, data) => {
-  if (!data.success) {
-    openFileErrMsg.innerText = data.content;
-    return;
-  }
-  document.getElementById("initial-view").style.display = "none";
-  document.getElementById("chat-view").style.display = "block";
-  userInput.focus();
-});
-
-// document.getElementById("goBack").addEventListener("click", function () {
-//   // Hide the chat view and show the initial view
-//   document.getElementById("chat-view").style.display = "none";
-//   document.getElementById("initial-view").style.display = "block";
-// });

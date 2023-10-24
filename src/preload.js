@@ -18,6 +18,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
       callback(event, data);
     });
   },
+  loadDocument: () => ipcRenderer.send("doc:load"),
+  onDocumentLoaded: (callback) => {
+    ipcRenderer.on("doc:load", (event, data) => {
+      callback(event, data);
+    });
+  },
   loadLLM: () => ipcRenderer.send("llm:load"),
   onLLMLoaded: (callback) => {
     ipcRenderer.on("llm:load", (event, data) => {

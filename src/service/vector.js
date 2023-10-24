@@ -74,8 +74,14 @@ function search(embedding, k) {
   return store.similaritySearchVector(embedding, k);
 }
 
+function vectorStoreSize() {
+  const store = MemoryVectorStore.getMemoryVectorStore();
+  return store.memoryVectors.length;
+}
+
 module.exports = {
   clearVectorStore,
+  vectorStoreSize,
   store,
   search,
 };
