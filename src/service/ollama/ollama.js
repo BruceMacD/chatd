@@ -11,7 +11,6 @@ class Ollama {
   static context = null; // stores the chat history for the current session
 
   constructor() {
-    this.abortController = null;
     this.childProcess = null;
     this.host = "http://127.0.0.1:11434";
   }
@@ -108,6 +107,57 @@ class Ollama {
     });
   }
 
+  async pull(model, fn) {
+    const body = JSON.stringify({
+      name: model,
+    });
+
+    const response = await fetch(this.host + "/api/pull", {
+      method: "POST",
+      body,
+      cache: "no-store",
+    });
+
+    if (response.status !== 200) {
+      let err = `HTTP Error (${response.status}): `;
+      err += await response.text();
+
+      throw new Error(err);
+    }
+
+    const reader = response.body.getReader();
+
+    // Reads the stream until the pull is complete
+    //  or when the stream is closed by the server
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        // We break before reaching here
+        // This means the prompt is not finished (maybe crashed?)
+        throw new Error("Failed to fulfill prompt");
+      }
+
+      // Parse responses are they are received from the Ollama server
+      for (const buffer of this.parse(value)) {
+        const json = JSON.parse(buffer);
+
+        fn(json);
+
+        if (json.status == "success") {
+          // done
+          return;
+        }
+      }
+    }
+  }
+
+  async run(model, fn) {
+    await this.pull(model, fn);
+    await this.generate(model, "", fn);
+    this.context = null;
+  }
+
   stop() {
     if (this.childProcess) {
       this.childProcess.kill();
@@ -115,20 +165,8 @@ class Ollama {
     }
   }
 
-  static reload() {
-    // TODO: change this to just drop the context
-    this.instance = new this();
-  }
-
-  /**
-   * Cancels the current request.
-   *
-   * @return {undefined}
-   */
-  abortGenerateRequest() {
-    if (this.abortController) {
-      this.abortController.abort();
-    }
+  clearHistory() {
+    this.context = null;
   }
 
   /**
@@ -172,30 +210,19 @@ class Ollama {
    * @return {Promise<undefined>}
    */
   async generate(model, prompt, fn) {
-    // Throws an {AbortError} when the request was not finished
-    // NOTE: the application is supposed to mitigate this from happening
-    this.abortGenerateRequest();
-    this.abortController = new AbortController();
-
-    // Stringifies the JSON request body
     const body = JSON.stringify({
       model: model,
       prompt: prompt,
       context: this.context,
-      options: {},
     });
 
-    // Sends the request to the server
     const response = await fetch(this.host + "/api/generate", {
       method: "POST",
       body,
       cache: "no-store",
-      signal: this.abortController.signal,
     });
 
-    // The ollama server only sends a status 200 for the response.ok range
     if (response.status !== 200) {
-      // Throws the response body of a failed response (without json decoding)
       let err = `HTTP Error (${response.status}): `;
       err += await response.text();
 
@@ -230,6 +257,11 @@ class Ollama {
   }
 }
 
+async function run(model, fn) {
+  const ollama = Ollama.getOllama();
+  return await ollama.run(model, fn);
+}
+
 async function generate(model, prompt, fn) {
   const ollama = Ollama.getOllama();
   return await ollama.generate(model, prompt, fn);
@@ -240,8 +272,9 @@ async function ping() {
   return await ollama.ping();
 }
 
-function reload() {
-  return; // TODO
+function clearHistory() {
+  const ollama = Ollama.getOllama();
+  return ollama.clearHistory();
 }
 
 function stop() {
@@ -255,9 +288,10 @@ function serve() {
 }
 
 module.exports = {
+  run,
   generate,
   ping,
-  reload,
+  clearHistory,
   stop,
   serve,
 };

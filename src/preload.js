@@ -30,4 +30,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
       callback(event, data);
     });
   },
+  runOllama: () => ipcRenderer.send("ollama:run"),
+  onOllamaRun: (callback) => {
+    ipcRenderer.on("ollama:run", (event, data) => {
+      callback(event, data);
+    });
+  },
 });

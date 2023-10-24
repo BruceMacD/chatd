@@ -5,35 +5,51 @@ const userInput = document.getElementById("user-input-text");
 const historyContainer = document.getElementById("history");
 const openFileButton = document.getElementById("file-open");
 const openFileErrMsg = document.getElementById("file-open-err-msg");
+const initalSpinner = document.getElementById("spinner");
+const initialStatusMsg = document.getElementById("status-msg");
 
 let responseElem;
 
 /**
  * This is the initial chain of events that must run on start-up.
- * 1. Load the LLM back-end. This will start the Ollama server if it is not already running.
+ * 1. Start the Ollama server.
  * 2. Run the model. This will load the model into memory so that first chat is not slow.
  *    This step will also download the model if it is not already downloaded.
- * 3. Start a new chat. This will bring the user to the chat view.
+ * 3. Monitor the run status
+ * 4. Load the chat
  */
-// 1. Load the LLM back-end.
+// 1. Start the Ollama server
 window.electronAPI.serveOllama();
-
+// 2. Run the model
 window.electronAPI.onOllamaServe((event, data) => {
   if (!data.success) {
-    // TODO: show error message
-    console.log(data.content);
+    initalSpinner.style.display = "none";
+    initialStatusMsg.textContent =
+      "Error: " + (data.content || "Unknown error occurred.");
     return;
   }
   if (data.content === "system") {
-    // Ollama was already running, and we just connected to it
+    // Ollama was already running, and we just connected to it, let the user know
     document.getElementById("status-container").style.display = "flex";
   }
-  // pre-load the model here
-  console.log("LLM loaded");
-  // finish by starting a new chat
-  window.electronAPI.newChat();
+  window.electronAPI.runOllama();
 });
-
+// 3. Monitor the run status
+window.electronAPI.onOllamaRun((event, data) => {
+  if (!data.success) {
+    initalSpinner.style.display = "none";
+    initialStatusMsg.textContent = "Error: " + data.content;
+    return;
+  }
+  if (data.content.done) {
+    // 4. Load the chat
+    document.getElementById("initial-view").style.display = "none";
+    document.getElementById("chat-view").style.display = "block";
+    userInput.focus();
+    return;
+  }
+  initialStatusMsg.textContent = data.content;
+});
 window.electronAPI.onChatLoaded((event, data) => {
   if (!data.success) {
     openFileErrMsg.innerText = data.content;

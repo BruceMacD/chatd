@@ -8,7 +8,45 @@ const {
   clearVectorStore,
   vectorStoreSize,
 } = require("./service/vector.js");
-const { generate, reload, stop, serve } = require("./service/ollama/ollama.js");
+const {
+  run,
+  generate,
+  clearHistory,
+  stop,
+  serve,
+} = require("./service/ollama/ollama.js");
+
+async function runOllamaModel(event, msg) {
+  try {
+    // send an empty message to the model to load it into memory
+    await run("mistral", (json) => {
+      // status will be set if the model is downloading
+      if (json.status) {
+        if (json.status.includes("downloading")) {
+          const percent = Math.round((json.completed / json.total) * 100);
+          const content = isNaN(percent)
+            ? "Downloading AI model..."
+            : `Downloading AI model... ${percent}%`;
+          event.reply("ollama:run", { success: true, content: content });
+          return;
+        }
+        if (json.status.includes("verifying")) {
+          const content = `Verifying AI model...`;
+          event.reply("ollama:run", { success: true, content: content });
+          return;
+        }
+      }
+      if (json.done) {
+        event.reply("ollama:run", { success: true, content: json });
+        return;
+      }
+      event.reply("ollama:run", { success: true, content: "Initializing..." });
+    });
+  } catch (err) {
+    console.log(err);
+    event.reply("ollama:run", { success: false, content: err.message });
+  }
+}
 
 async function sendChat(event, msg) {
   let prompt = msg;
@@ -44,9 +82,9 @@ Anything between the following \`user\` html blocks is is part of the conversati
 
 async function newChat(event) {
   try {
-    // reload the services to clear any previous state
+    // clear the state from the services
     clearVectorStore();
-    reload();
+    clearHistory();
     event.reply("chat:load", { success: true, content: "success" });
   } catch (err) {
     console.log(err);
@@ -105,5 +143,6 @@ module.exports = {
   sendChat,
   loadDocument,
   serveOllama,
+  runOllamaModel,
   stopOllama,
 };
