@@ -180,7 +180,7 @@ class Ollama {
     // Stringifies the JSON request body
     const body = JSON.stringify({
       model: model,
-      template: prompt,
+      prompt: prompt,
       context: this.context,
       options: {},
     });
