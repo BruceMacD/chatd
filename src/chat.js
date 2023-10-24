@@ -8,12 +8,7 @@ const {
   clearVectorStore,
   vectorStoreSize,
 } = require("./service/vector.js");
-const {
-  generate,
-  reloadOllama,
-  stopOllama,
-  runOllama,
-} = require("./service/ollama/ollama.js");
+const { generate, reload, stop, serve } = require("./service/ollama/ollama.js");
 
 async function sendChat(event, msg) {
   let prompt = msg;
@@ -51,7 +46,7 @@ async function newChat(event) {
   try {
     // reload the services to clear any previous state
     clearVectorStore();
-    reloadOllama();
+    reload();
     event.reply("chat:load", { success: true, content: "success" });
   } catch (err) {
     console.log(err);
@@ -92,23 +87,23 @@ async function loadDocument(event) {
   }
 }
 
-async function loadLLM(event) {
+async function serveOllama(event) {
   try {
-    const runType = await runOllama();
-    event.reply("llm:load", { success: true, content: runType });
+    const serveType = await serve();
+    event.reply("ollama:serve", { success: true, content: serveType });
   } catch (err) {
-    event.reply("llm:load", { success: false, content: err.message });
+    event.reply("ollama:serve", { success: false, content: err.message });
   }
 }
 
-function stopLLM(event) {
-  stopOllama();
+function stopOllama(event) {
+  stop();
 }
 
 module.exports = {
   newChat,
   sendChat,
   loadDocument,
-  loadLLM,
-  stopLLM,
+  serveOllama,
+  stopOllama,
 };

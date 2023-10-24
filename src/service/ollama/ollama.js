@@ -1,7 +1,7 @@
 const path = require("path");
 const { exec } = require("child_process");
 
-var OllamaRunType = {
+var OllamaServeType = {
   SYSTEM: "system",
   PACKAGED: "packaged",
 };
@@ -24,29 +24,29 @@ class Ollama {
   }
 
   /**
-   * Run Ollama to serve an LLM.
+   * Start Ollama to serve an LLM.
    *
    * @throws {Error}
    * @return {OllamaStatus} The status of the Ollama server.
    */
-  async run() {
+  async serve() {
     try {
       // see if ollama is already running
       await this.ping();
-      return OllamaRunType.SYSTEM;
+      return OllamaServeType.SYSTEM;
     } catch (err) {
       // this is fine, we just need to start ollama
       console.log(err);
     }
     try {
       // See if 'ollama run' command is available on the system
-      return await this.runSystem();
+      return await this.serveSystem();
     } catch (err) {
       // ollama is not installed, run the binary directly
       console.log(`exec ollama: ${err}`);
     }
 
-    // start the ollama packaged ollama server
+    // start the packaged ollama server
     try {
       let exe = "";
       switch (process.platform) {
@@ -75,7 +75,7 @@ class Ollama {
             console.warn(`Warnings from ollama-darwin: ${stderr}`);
           }
 
-          return OllamaRunType.PACKAGED;
+          return OllamaServeType.PACKAGED;
         }
       );
     } catch (err) {
@@ -83,8 +83,8 @@ class Ollama {
     }
   }
 
-  // runs ollama if it is already installed
-  async runSystem() {
+  // run ollama serve if it is already installed
+  async serveSystem() {
     return new Promise((resolve, reject) => {
       exec("ollama run mistral", (error, stdout, stderr) => {
         if (error) {
@@ -103,7 +103,7 @@ class Ollama {
           return;
         }
 
-        resolve(OllamaRunType.SYSTEM);
+        resolve(OllamaServeType.SYSTEM);
       });
     });
   }
@@ -240,24 +240,24 @@ async function ping() {
   return await ollama.ping();
 }
 
-function reloadOllama() {
+function reload() {
   return; // TODO
 }
 
-function stopOllama() {
+function stop() {
   const ollama = Ollama.getOllama();
   return ollama.stop();
 }
 
-function runOllama() {
+function serve() {
   const ollama = Ollama.getOllama();
-  return ollama.run();
+  return ollama.serve();
 }
 
 module.exports = {
   generate,
   ping,
-  reloadOllama,
-  stopOllama,
-  runOllama,
+  reload,
+  stop,
+  serve,
 };

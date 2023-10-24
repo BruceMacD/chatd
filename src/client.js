@@ -8,10 +8,17 @@ const openFileErrMsg = document.getElementById("file-open-err-msg");
 
 let responseElem;
 
-// start the LLM back-end
-window.electronAPI.loadLLM();
+/**
+ * This is the initial chain of events that must run on start-up.
+ * 1. Load the LLM back-end. This will start the Ollama server if it is not already running.
+ * 2. Run the model. This will load the model into memory so that first chat is not slow.
+ *    This step will also download the model if it is not already downloaded.
+ * 3. Start a new chat. This will bring the user to the chat view.
+ */
+// 1. Load the LLM back-end.
+window.electronAPI.serveOllama();
 
-window.electronAPI.onLLMLoaded((event, data) => {
+window.electronAPI.onOllamaServe((event, data) => {
   if (!data.success) {
     // TODO: show error message
     console.log(data.content);

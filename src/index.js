@@ -4,8 +4,8 @@ const { session } = require("electron");
 const {
   newChat,
   sendChat,
-  loadLLM,
-  stopLLM,
+  serveOllama,
+  stopOllama,
   loadDocument,
 } = require("./chat.js");
 
@@ -41,8 +41,8 @@ app.on("ready", () => {
   ipcMain.on("chat:send", sendChat);
   ipcMain.on("chat:new", newChat);
   ipcMain.on("doc:load", loadDocument);
-  ipcMain.on("llm:load", loadLLM);
-  ipcMain.on("llm:stop", stopLLM);
+  ipcMain.on("ollama:serve", serveOllama);
+  ipcMain.on("ollama:stop", stopOllama);
 
   createWindow();
 
@@ -62,7 +62,7 @@ app.on("ready", () => {
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
   // Stop the ollama server when the app is closed
-  stopLLM();
+  stopOllama();
   if (process.platform !== "darwin") {
     app.quit();
   }
