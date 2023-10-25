@@ -40,7 +40,7 @@ class Ollama {
 
     try {
       // See if 'ollama serve' command is available on the system
-      await this.exec("ollama serve");
+      await this.execServe("ollama");
       return OllamaServeType.SYSTEM;
     } catch (err) {
       // ollama is not installed, run the binary directly
@@ -66,17 +66,17 @@ class Ollama {
 
     const pathToBinary = path.join(__dirname, "runners", exe);
     try {
-      await this.exec(pathToBinary + " serve");
+      await this.execServe(pathToBinary);
       return OllamaServeType.PACKAGED;
     } catch (err) {
       throw new Error(`Failed to start Ollama: ${err}`);
     }
   }
 
-  // exec the specified command, and wait for a response
-  async exec(command) {
+  // execServe runs the serve command, and waits for a response
+  async execServe(path) {
     return new Promise((resolve, reject) => {
-      this.childProcess = exec(command, (error, stdout, stderr) => {
+      this.childProcess = exec(path + " serve", (error, stdout, stderr) => {
         if (error) {
           reject(`exec error: ${error}`);
           return;
