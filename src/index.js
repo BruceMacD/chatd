@@ -2,7 +2,6 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { session } = require("electron");
 const {
-  newChat,
   sendChat,
   serveOllama,
   stopOllama,
@@ -40,7 +39,6 @@ app.on("ready", () => {
   // between the renderer process (UI) and the main process.
   // https://www.electronjs.org/docs/latest/tutorial/ipc#pattern-2-renderer-to-main-two-way
   ipcMain.on("chat:send", sendChat);
-  ipcMain.on("chat:new", newChat);
   ipcMain.on("doc:load", loadDocument);
   ipcMain.on("ollama:serve", serveOllama);
   ipcMain.on("ollama:run", runOllamaModel);

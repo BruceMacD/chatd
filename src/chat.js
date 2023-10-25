@@ -80,18 +80,6 @@ Anything between the following \`user\` html blocks is is part of the conversati
   }
 }
 
-async function newChat(event) {
-  try {
-    // clear the state from the services
-    clearVectorStore();
-    clearHistory();
-    event.reply("chat:load", { success: true, content: "success" });
-  } catch (err) {
-    console.log(err);
-    event.reply("chat:load", { success: false, content: err.message });
-  }
-}
-
 async function loadDocument(event) {
   try {
     clearVectorStore();
@@ -139,7 +127,6 @@ function stopOllama(event) {
 }
 
 module.exports = {
-  newChat,
   sendChat,
   loadDocument,
   serveOllama,

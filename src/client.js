@@ -50,16 +50,19 @@ window.electronAPI.onOllamaRun((event, data) => {
   }
   initialStatusMsg.textContent = data.content;
 });
-window.electronAPI.onChatLoaded((event, data) => {
+
+// Update the display when a document is loaded
+window.electronAPI.onDocumentLoaded((event, data) => {
   if (!data.success) {
     openFileErrMsg.innerText = data.content;
     return;
   }
-  document.getElementById("initial-view").style.display = "none";
-  document.getElementById("chat-view").style.display = "block";
+  // change the button to say the name of the document
+  // add an x button to remove the document
   userInput.focus();
 });
 
+// Send chat on enter key
 userInput.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
     event.preventDefault();
@@ -99,6 +102,7 @@ userInput.addEventListener("keydown", function (event) {
   }
 });
 
+// Receive chat response from Ollama server
 window.electronAPI.onChatReply((event, data) => {
   // clear loading animation
   const loadingDots = responseElem.querySelector(".dots-loading");
@@ -116,6 +120,7 @@ window.electronAPI.onChatReply((event, data) => {
   }
 });
 
+// Open file dialog
 openFileButton.addEventListener("click", () => {
   openFileErrMsg.innerText = "";
   window.electronAPI.loadDocument();
