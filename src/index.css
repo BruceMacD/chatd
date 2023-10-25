@@ -59,6 +59,7 @@ button:focus {
 .chat {
     width: 100%;
     padding: 20px;
+    padding-top: 40px;
 }
 
 .history {
@@ -111,7 +112,7 @@ button:focus {
     right: 0;
     height: 5%;
     background: linear-gradient(to bottom, rgba(24, 24, 24, 1), rgba(24, 24, 24, 0));
-    z-index: 1000;
+    z-index: 999;
     pointer-events: none;
     overflow-y: auto;
 }
@@ -132,13 +133,24 @@ button:focus {
 }
 
 #file-open {
-    background-color: transparent;
-    border: none;
+    background-color: rgba(32, 32, 32, 0.85);
+    border: 0.5px solid rgba(200, 200, 200, 0.8);
     cursor: pointer;
-    padding: 8px;
+    padding: 5px 10px;
     display: flex;
     align-items: center;
     gap: 8px;
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000; /* To make sure the button is always on top of the chat view */
+}
+
+#file-open svg {
+    width: 18px;
+    height: 18px;
+    display: block;
 }
 
 #file-open svg {
