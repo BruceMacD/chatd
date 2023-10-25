@@ -37,73 +37,70 @@ class Ollama {
       // this is fine, we just need to start ollama
       console.log(err);
     }
+
     try {
-      // See if 'ollama run' command is available on the system
-      return await this.serveSystem();
+      // See if 'ollama serve' command is available on the system
+      await this.exec("ollama serve");
+      return OllamaServeType.SYSTEM;
     } catch (err) {
       // ollama is not installed, run the binary directly
       console.log(`exec ollama: ${err}`);
     }
 
     // start the packaged ollama server
-    try {
-      let exe = "";
-      switch (process.platform) {
-        case "win32":
-          exe = "ollama.exe";
-          break;
-        case "darwin":
-          exe = "ollama-darwin";
-          break;
-        case "linux":
-          exe = "ollama-linux-" + process.arch;
-          break;
-        default:
-          throw new Error("Unsupported platform:", process.platform);
-      }
-      const pathToBinary = path.join(__dirname, "runners", exe);
-      this.childProcess = exec(
-        `${pathToBinary} serve`,
-        (error, stdout, stderr) => {
-          if (error) {
-            console.error(`Error executing ollama-darwin: ${error}`);
-            return;
-          }
-          console.log(stdout);
-          if (stderr) {
-            console.warn(`Warnings from ollama-darwin: ${stderr}`);
-          }
+    let exe = "";
+    switch (process.platform) {
+      case "win32":
+        exe = "ollama.exe";
+        break;
+      case "darwin":
+        exe = "ollama-darwin";
+        break;
+      case "linux":
+        exe = "ollama-linux-" + process.arch;
+        break;
+      default:
+        reject(new Error(`Unsupported platform: ${process.platform}`));
+        return;
+    }
 
-          return OllamaServeType.PACKAGED;
-        }
-      );
+    const pathToBinary = path.join(__dirname, "runners", exe);
+    try {
+      await this.exec(pathToBinary + " serve");
+      return OllamaServeType.PACKAGED;
     } catch (err) {
-      throw new Error(`Failed to start ollama server: ${err}`);
+      throw new Error(`Failed to start Ollama: ${err}`);
     }
   }
 
-  // run ollama serve if it is already installed
-  async serveSystem() {
+  // exec the specified command, and wait for a response
+  async exec(command) {
     return new Promise((resolve, reject) => {
-      exec("ollama run mistral", (error, stdout, stderr) => {
+      this.childProcess = exec(command, (error, stdout, stderr) => {
         if (error) {
-          reject(new Error(`exec error: ${error}`));
+          reject(`exec error: ${error}`);
           return;
         }
 
         if (stderr) {
-          reject(new Error(`ollama stderr: ${stderr}`));
+          reject(`ollama stderr: ${stderr}`);
           return;
         }
 
-        console.log(`stdout: ${stdout}`);
-        if (stdout.includes("Error")) {
-          reject(new Error(`ollama stdout: ${stdout}`));
-          return;
-        }
-
-        resolve(OllamaServeType.SYSTEM);
+        reject(`ollama stdout: ${stdout}`);
       });
+
+      // Once the process is started, try to ping Ollama server.
+      this.waitForPing()
+        .then(() => {
+          resolve();
+        })
+        .catch((pingError) => {
+          if (this.childProcess && !this.childProcess.killed) {
+            this.childProcess.kill();
+          }
+          reject(pingError);
+        });
     });
   }
 
@@ -196,6 +193,25 @@ class Ollama {
     console.log("Ollama server is running");
 
     return true;
+  }
+
+  /**
+   * Waits for the Ollama server to respond to ping.
+   * @param {number} delay Time in ms to wait between retries.
+   * @param {number} retries Maximum number of retries.
+   * @return {Promise}
+   */
+  async waitForPing(delay = 1000, retries = 5) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await this.ping();
+        return;
+      } catch (error) {
+        console.log("Waiting for Ollama server...");
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+    throw new Error("Max retries reached. Ollama server didn't respond.");
   }
 
   /**
