@@ -1,3 +1,4 @@
+const path = require("path");
 const fs = require("fs").promises;
 const { dialog } = require("electron");
 const pdf = require("pdf-parse");
@@ -21,14 +22,19 @@ async function openFile() {
 
   const filePath = result.filePaths[0];
 
+  let content;
   if (filePath.endsWith(".pdf")) {
     const dataBuffer = await fs.readFile(filePath);
     const data = await pdf(dataBuffer);
-    return data.text;
+    content = data.text;
   } else {
-    const content = await fs.readFile(filePath, "utf-8");
-    return content;
+    content = await fs.readFile(filePath, "utf-8");
   }
+
+  return {
+    fileName: path.basename(filePath),
+    content: content,
+  };
 }
 
 module.exports = {

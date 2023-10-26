@@ -4,7 +4,7 @@
 const userInput = document.getElementById("user-input-text");
 const historyContainer = document.getElementById("history");
 const openFileButton = document.getElementById("file-open");
-const openFileErrMsg = document.getElementById("file-open-err-msg");
+const fileButtonText = document.getElementById("file-button-text");
 const initalSpinner = document.getElementById("spinner");
 const initialStatusMsg = document.getElementById("status-msg");
 
@@ -53,11 +53,9 @@ window.electronAPI.onOllamaRun((event, data) => {
 
 // Update the display when a document is loaded
 window.electronAPI.onDocumentLoaded((event, data) => {
-  if (!data.success) {
-    openFileErrMsg.innerText = data.content;
-    return;
-  }
   // change the button to say the name of the document
+  document.getElementById("file-spinner").style.display = "none";
+  fileButtonText.innerText = data.content;
   // add an x button to remove the document
   userInput.focus();
 });
@@ -122,6 +120,8 @@ window.electronAPI.onChatReply((event, data) => {
 
 // Open file dialog
 openFileButton.addEventListener("click", () => {
-  openFileErrMsg.innerText = "";
+  document.getElementById("file-open-icon").style.display = "none";
+  document.getElementById("file-spinner").style.display = "inline-block";
+  fileButtonText.innerText = "Loading...";
   window.electronAPI.loadDocument();
 });
