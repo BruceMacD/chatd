@@ -187,6 +187,21 @@ button:focus {
     padding-top: 10px;
 }
 
+#stop-request-container {
+    display: none;
+    align-items: center;
+    gap: 5px;
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+}
+
+#stop-request-btn {
+    font-size: 0.75rem;
+}
+
 #status-container {
     display: none;
     align-items: center;

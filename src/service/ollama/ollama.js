@@ -13,6 +13,7 @@ class Ollama {
   constructor() {
     this.childProcess = null;
     this.host = "http://127.0.0.1:11434";
+    this.abort = new AbortController();
   }
 
   static getOllama() {
@@ -236,6 +237,7 @@ class Ollama {
       method: "POST",
       body,
       cache: "no-store",
+      signal: this.abort.signal,
     });
 
     if (response.status !== 200) {
@@ -271,6 +273,13 @@ class Ollama {
       }
     }
   }
+
+  abortRequest() {
+    if (this.abort) {
+      this.abort.abort();
+      this.abort = new AbortController();
+    }
+  }
 }
 
 async function run(model, fn) {
@@ -281,6 +290,11 @@ async function run(model, fn) {
 async function generate(model, prompt, fn) {
   const ollama = Ollama.getOllama();
   return await ollama.generate(model, prompt, fn);
+}
+
+function abort() {
+  const ollama = Ollama.getOllama();
+  return ollama.abortRequest();
 }
 
 async function ping() {
@@ -306,6 +320,7 @@ function serve() {
 module.exports = {
   run,
   generate,
+  abort,
   ping,
   clearHistory,
   stop,

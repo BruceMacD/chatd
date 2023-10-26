@@ -8,7 +8,13 @@ const {
   clearVectorStore,
   vectorStoreSize,
 } = require("./service/vector.js");
-const { run, generate, stop, serve } = require("./service/ollama/ollama.js");
+const {
+  abort,
+  run,
+  generate,
+  stop,
+  serve,
+} = require("./service/ollama/ollama.js");
 
 async function runOllamaModel(event, msg) {
   try {
@@ -74,6 +80,10 @@ Anything between the following \`user\` html blocks is is part of the conversati
   }
 }
 
+function stopChat() {
+  abort();
+}
+
 async function loadDocument(event) {
   try {
     clearVectorStore();
@@ -121,6 +131,7 @@ function stopOllama(event) {
 }
 
 module.exports = {
+  stopChat,
   sendChat,
   loadDocument,
   serveOllama,

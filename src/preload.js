@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
       callback(event, data);
     });
   },
+  stopChat: () => ipcRenderer.send("chat:stop"),
   loadDocument: () => ipcRenderer.send("doc:load"),
   onDocumentLoaded: (callback) => {
     ipcRenderer.on("doc:load", (event, data) => {

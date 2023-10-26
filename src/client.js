@@ -6,7 +6,10 @@ const historyContainer = document.getElementById("history");
 const openFileButton = document.getElementById("file-open");
 const fileButtonText = document.getElementById("file-button-text");
 const initalSpinner = document.getElementById("spinner");
-const initialStatusMsg = document.getElementById("status-msg");
+const statusMsg = document.getElementById("status-msg");
+const statusContainer = document.getElementById("status-container");
+const stopRequestContainer = document.getElementById("stop-request-container");
+const stopRequestBtn = document.getElementById("stop-request-btn");
 
 let responseElem;
 
@@ -24,7 +27,7 @@ window.electronAPI.serveOllama();
 window.electronAPI.onOllamaServe((event, data) => {
   if (!data.success) {
     initalSpinner.style.display = "none";
-    initialStatusMsg.textContent =
+    statusMsg.textContent =
       "Error: " + (data.content || "Unknown error occurred.");
     return;
   }
@@ -38,7 +41,7 @@ window.electronAPI.onOllamaServe((event, data) => {
 window.electronAPI.onOllamaRun((event, data) => {
   if (!data.success) {
     initalSpinner.style.display = "none";
-    initialStatusMsg.textContent = "Error: " + data.content;
+    statusMsg.textContent = "Error: " + data.content;
     return;
   }
   if (data.content.done) {
@@ -48,7 +51,7 @@ window.electronAPI.onOllamaRun((event, data) => {
     userInput.focus();
     return;
   }
-  initialStatusMsg.textContent = data.content;
+  statusMsg.textContent = data.content;
 });
 
 // Update the display when a document is loaded
@@ -64,6 +67,8 @@ window.electronAPI.onDocumentLoaded((event, data) => {
 userInput.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
     event.preventDefault();
+    statusContainer.style.display = "none"; // once the first chat is sent, hide the initial status message
+    stopRequestContainer.style.display = "flex";
     // Disable input while processing
     userInput.disabled = true;
     userInput.placeholder = "";
@@ -110,9 +115,12 @@ window.electronAPI.onChatReply((event, data) => {
 
   // Append new content to the persistent responseElem's innerText
   const resp = data.success ? data.content : "Error: " + data.content;
-  responseElem.innerText += resp.response; // Append to existing text
+  if (resp.response) {
+    responseElem.innerText += resp.response; // Append to existing text
+  }
 
   if (resp.done) {
+    stopRequestContainer.style.display = "none";
     userInput.disabled = false;
     userInput.focus();
   }
@@ -124,4 +132,11 @@ openFileButton.addEventListener("click", () => {
   document.getElementById("file-spinner").style.display = "inline-block";
   fileButtonText.innerText = "Loading...";
   window.electronAPI.loadDocument();
+});
+
+stopRequestBtn.addEventListener("click", () => {
+  window.electronAPI.stopChat();
+  stopRequestContainer.style.display = "none";
+  userInput.disabled = false;
+  userInput.focus();
 });
