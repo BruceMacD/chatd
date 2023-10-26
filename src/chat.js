@@ -8,13 +8,7 @@ const {
   clearVectorStore,
   vectorStoreSize,
 } = require("./service/vector.js");
-const {
-  run,
-  generate,
-  clearHistory,
-  stop,
-  serve,
-} = require("./service/ollama/ollama.js");
+const { run, generate, stop, serve } = require("./service/ollama/ollama.js");
 
 async function runOllamaModel(event, msg) {
   try {
