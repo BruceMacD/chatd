@@ -18,7 +18,7 @@ body {
     align-items: center;
 }
 
-input {
+textarea {
     width: 100%;
     padding: 20px;
     background-color: #181818;
@@ -26,6 +26,14 @@ input {
     font-size: 1rem;
     color: #C8C8C8;
     border: none;
+    resize: none; /* This will prevent users from resizing the textarea manually */
+    overflow-y: hidden; /* In case the text exceeds the height */
+    height: auto; /* This will ensure the height changes according to the content, but you can set a fixed height if needed */
+}
+
+textarea:focus {
+    border: none;
+    outline: none;
 }
 
 button {
@@ -200,6 +208,7 @@ button:focus {
 
 #stop-request-btn {
     font-size: 0.75rem;
+    background-color: rgba(32, 32, 32, 0.85);
 }
 
 #status-container {
