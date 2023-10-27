@@ -10,8 +10,10 @@ const statusMsg = document.getElementById("status-msg");
 const statusContainer = document.getElementById("status-container");
 const stopRequestContainer = document.getElementById("stop-request-container");
 const stopRequestBtn = document.getElementById("stop-request-btn");
+const chatView = document.getElementById("chat-view");
 
 let responseElem;
+let firstChatResponse = true; // track the first response to scroll to the bottom
 
 /**
  * This is the initial chain of events that must run on start-up.
@@ -47,7 +49,7 @@ window.electronAPI.onOllamaRun((event, data) => {
   if (data.content.done) {
     // 4. Load the chat
     document.getElementById("initial-view").style.display = "none";
-    document.getElementById("chat-view").style.display = "block";
+    chatView.style.display = "block";
     userInput.focus();
     return;
   }
@@ -67,6 +69,7 @@ window.electronAPI.onDocumentLoaded((event, data) => {
 userInput.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
     event.preventDefault();
+    firstChatResponse = true;
     statusContainer.style.display = "none"; // once the first chat is sent, hide the initial status message
     stopRequestContainer.style.display = "flex";
     // Disable input while processing
@@ -123,6 +126,16 @@ window.electronAPI.onChatReply((event, data) => {
     stopRequestContainer.style.display = "none";
     userInput.disabled = false;
     userInput.focus();
+  }
+
+  // Check if the user is already at the bottom of the content
+  const isAtBottom =
+    chatView.scrollTop + chatView.clientHeight >= chatView.scrollHeight - 50; // 10 is a tolerance value
+
+  // If they're at the bottom, scroll to the new bottom
+  if (isAtBottom || firstChatResponse) {
+    chatView.scrollTop = chatView.scrollHeight;
+    firstChatResponse = false;
   }
 });
 
