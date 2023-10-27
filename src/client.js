@@ -116,13 +116,19 @@ window.electronAPI.onChatReply((event, data) => {
     loadingDots.remove();
   }
 
-  // Append new content to the persistent responseElem's innerText
-  const resp = data.success ? data.content : "Error: " + data.content;
-  if (resp.response) {
-    responseElem.innerText += resp.response; // Append to existing text
+  if (!data.success) {
+    responseElem.innerText = "Error: " + data.content;
+    stopRequestContainer.style.display = "none";
+    userInput.disabled = false;
+    userInput.focus();
+    return;
   }
 
-  if (resp.done) {
+  if (data.content.response) {
+    responseElem.innerText += data.content.response; // Append to existing text
+  }
+
+  if (data.content.done) {
     stopRequestContainer.style.display = "none";
     userInput.disabled = false;
     userInput.focus();
