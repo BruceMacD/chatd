@@ -2,6 +2,8 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { session } = require("electron");
 const {
+  getModel,
+  setModel,
   sendChat,
   stopChat,
   serveOllama,
@@ -16,7 +18,6 @@ if (require("electron-squirrel-startup")) {
 }
 
 const createWindow = () => {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
@@ -25,11 +26,11 @@ const createWindow = () => {
     },
   });
 
-  // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "index.html"));
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  if (!app.isPackaged) {
+    mainWindow.webContents.openDevTools();
+  }
 };
 
 // This method will be called when Electron has finished
@@ -39,6 +40,8 @@ app.on("ready", () => {
   // Add a handler for the interprocess events. This enables 2-way communication
   // between the renderer process (UI) and the main process.
   // https://www.electronjs.org/docs/latest/tutorial/ipc#pattern-2-renderer-to-main-two-way
+  ipcMain.on("model:set", setModel);
+  ipcMain.on("model:get", getModel);
   ipcMain.on("chat:send", sendChat);
   ipcMain.on("chat:stop", stopChat);
   ipcMain.on("doc:load", loadDocument);

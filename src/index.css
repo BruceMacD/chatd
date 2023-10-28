@@ -125,6 +125,56 @@ button:focus {
     overflow-y: auto;
 }
 
+#settings-view {
+    display: none;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.settings-content {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#model-label {
+    color: #C8C8C8;
+    font-size: 0.9rem;
+}
+
+#model-select {
+    padding: 10px;
+    background-color: #202020;
+    border: 1px solid #C8C8C8;
+    color: #C8C8C8;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%;
+}
+
+#model-select:focus {
+    outline: none;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+}
+
+#cancel-btn {
+    background-color: #C8C8C8;
+    color: #202020;
+    margin-right: 4px;
+}
+
+#cancel-btn:hover {
+    background-color: #B0B0B0; 
+    color: #1a1a1a; 
+}
+
 #initial-view {
     display: flex;
     flex-direction: column;
@@ -193,6 +243,17 @@ button:focus {
 
 #file-open-err-msg {
     padding-top: 10px;
+}
+
+#settings-icon {
+    display: none;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    z-index: 1001;
+    width: 16px;
+    height: 16px;
 }
 
 #stop-request-container {

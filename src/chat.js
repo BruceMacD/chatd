@@ -16,10 +16,20 @@ const {
   serve,
 } = require("./service/ollama/ollama.js");
 
+let model = "mistral";
+
+async function setModel(event, msg) {
+  model = msg;
+}
+
+async function getModel(event) {
+  event.reply("model:get", { success: true, content: model });
+}
+
 async function runOllamaModel(event, msg) {
   try {
     // send an empty message to the model to load it into memory
-    await run("mistral", (json) => {
+    await run(model, (json) => {
       // status will be set if the model is downloading
       if (json.status) {
         if (json.status.includes("downloading")) {
@@ -70,7 +80,7 @@ Anything between the following \`user\` html blocks is is part of the conversati
 </user>`;
   }
   try {
-    await generate("mistral", prompt, (json) => {
+    await generate(model, prompt, (json) => {
       // Reply with the content every time we receive data
       event.reply("chat:reply", { success: true, content: json });
     });
@@ -131,6 +141,8 @@ function stopOllama(event) {
 }
 
 module.exports = {
+  setModel,
+  getModel,
   stopChat,
   sendChat,
   loadDocument,

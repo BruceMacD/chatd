@@ -7,10 +7,15 @@ const openFileButton = document.getElementById("file-open");
 const fileButtonText = document.getElementById("file-button-text");
 const initalSpinner = document.getElementById("spinner");
 const statusMsg = document.getElementById("status-msg");
+const settingsIcon = document.getElementById("settings-icon");
 const statusContainer = document.getElementById("status-container");
 const stopRequestContainer = document.getElementById("stop-request-container");
 const stopRequestBtn = document.getElementById("stop-request-btn");
 const chatView = document.getElementById("chat-view");
+const settingsView = document.getElementById("settings-view");
+const settingsCancelBtn = document.getElementById("cancel-btn");
+const settingsSaveBtn = document.getElementById("save-btn");
+const modelSelectInput = document.getElementById("model-select");
 
 let responseElem;
 
@@ -22,6 +27,7 @@ let responseElem;
  * 3. Monitor the run status
  * 4. Load the chat
  */
+
 // 1. Start the Ollama server
 window.electronAPI.serveOllama();
 // 2. Run the model
@@ -35,6 +41,7 @@ window.electronAPI.onOllamaServe((event, data) => {
   if (data.content === "system") {
     // Ollama was already running, and we just connected to it, let the user know
     document.getElementById("status-container").style.display = "flex";
+    settingsIcon.style.display = "inline-block";
   }
   window.electronAPI.runOllama();
 });
@@ -69,6 +76,7 @@ userInput.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
     event.preventDefault();
     statusContainer.style.display = "none"; // once the first chat is sent, hide the initial status message
+    settingsIcon.style.display = "none"; // once the first chat is sent, hide the settings icon
     stopRequestContainer.style.display = "flex";
     // Disable input while processing
     userInput.disabled = true;
@@ -159,6 +167,32 @@ stopRequestBtn.addEventListener("click", () => {
   stopRequestContainer.style.display = "none";
   userInput.disabled = false;
   userInput.focus();
+});
+
+settingsIcon.addEventListener("click", () => {
+  // Send a request to get the current model, settings view will be displayed when the response is received
+  modelSelectInput.value = window.electronAPI.getModel();
+});
+
+// A modelGet response means the settings view should be displayed
+window.electronAPI.onModelGet((event, data) => {
+  if (!data.success) {
+    console.log("Error getting model: " + data.content);
+  }
+  modelSelectInput.value = data.content;
+  chatView.style.display = "none";
+  settingsView.style.display = "flex";
+});
+
+settingsCancelBtn.addEventListener("click", () => {
+  chatView.style.display = "block";
+  settingsView.style.display = "none";
+});
+
+settingsSaveBtn.addEventListener("click", () => {
+  window.electronAPI.setModel(modelSelectInput.value);
+  chatView.style.display = "block";
+  settingsView.style.display = "none";
 });
 
 // Auto-resize the input box to fit the text
