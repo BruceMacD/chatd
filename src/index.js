@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, dialog, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { session } = require("electron");
 const {
@@ -61,6 +61,30 @@ app.on("ready", () => {
       },
     });
   });
+
+  if (process.platform === "darwin" && app.isPackaged) {
+    if (!app.isInApplicationsFolder()) {
+      const chosen = dialog.showMessageBoxSync({
+        type: "question",
+        buttons: ["Move to Applications", "Do Not Move"],
+        message:
+          "Would you like to move this chatd to the Applications folder?",
+        defaultId: 0,
+        cancelId: 1,
+      });
+
+      if (chosen === 0) {
+        try {
+          app.moveToApplicationsFolder();
+        } catch (err) {
+          dialog.showErrorBox(
+            "Unable to move to Applications folder",
+            err.message
+          );
+        }
+      }
+    }
+  }
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
