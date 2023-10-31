@@ -1,7 +1,4 @@
 module.exports = {
-  packagerConfig: {
-    icon: "./public/chatd",
-  },
   rebuildConfig: {},
   makers: [
     {
@@ -21,4 +18,16 @@ module.exports = {
       config: {},
     },
   ],
+  packagerConfig: {
+    icon: "./public/chatd",
+    osxSign: {
+      identity: process.env.APPLE_IDENTITY,
+    },
+    osxNotarize: {
+      tool: "notarytool",
+      appleId: process.env.APPLE_ID,
+      appleIdPassword: process.env.APPLE_PASSWORD,
+      teamId: process.env.APPLE_TEAM_ID,
+    },
+  },
 };
