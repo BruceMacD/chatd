@@ -98,28 +98,31 @@ app.on("ready", () => {
       }
     }
 
-    // Auto-updater logic
-    autoUpdater.setFeedURL({
-      url: updateURL,
-    });
-    autoUpdater.checkForUpdates();
-
-    setInterval(() => {
+    // TODO: auto-update on Windows, there is a squirrel error that needs to be fixed
+    if (!process.platform === "win32") {
+      // Auto-updater logic
+      autoUpdater.setFeedURL({
+        url: updateURL,
+      });
       autoUpdater.checkForUpdates();
-    }, 3600000); // Check every hour
 
-    autoUpdater.on("update-available", (info) => {
-      logger.info("Update available");
-    });
+      setInterval(() => {
+        autoUpdater.checkForUpdates();
+      }, 3600000); // Check every hour
 
-    autoUpdater.on("update-downloaded", () => {
-      // The update is ready to be installed on app restart.
-      logger.info("Update downloaded");
-    });
+      autoUpdater.on("update-available", (info) => {
+        logger.info("Update available");
+      });
 
-    autoUpdater.on("error", (err) => {
-      logger.error("Error in auto-updater: ", err);
-    });
+      autoUpdater.on("update-downloaded", () => {
+        // The update is ready to be installed on app restart.
+        logger.info("Update downloaded");
+      });
+
+      autoUpdater.on("error", (err) => {
+        logger.error("Error in auto-updater: ", err);
+      });
+    }
   }
 
   createWindow();
