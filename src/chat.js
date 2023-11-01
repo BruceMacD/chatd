@@ -82,7 +82,6 @@ Anything between the following \`user\` html blocks is is part of the conversati
 <user>
   ${msg}
 </user>`;
-    console.log(prompt);
   }
   try {
     await generate(model, prompt, (json) => {

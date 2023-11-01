@@ -179,10 +179,24 @@ class Ollama {
   }
 
   stop() {
-    if (this.childProcess) {
-      this.childProcess.kill();
-      this.childProcess = null;
+    if (!this.childProcess) {
+      return;
     }
+
+    if (os.platform() === "win32") {
+      // Windows: Use taskkill to force kill the process tree
+      exec(`taskkill /pid ${this.childProcess.pid} /f /t`, (err) => {
+        if (err) {
+          console.error(
+            `Failed to kill process ${this.childProcess.pid}: ${err}`
+          );
+        }
+      });
+    } else {
+      this.childProcess.kill();
+    }
+
+    this.childProcess = null;
   }
 
   clearHistory() {
