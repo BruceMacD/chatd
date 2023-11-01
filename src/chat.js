@@ -62,22 +62,27 @@ async function sendChat(event, msg) {
   let prompt = msg;
   if (vectorStoreSize() > 0) {
     const msgEmbeds = await embed([msg]);
-    const searchResult = search(msgEmbeds[0].embedding, 3);
+    const searchResult = search(msgEmbeds[0].embedding, 20);
     // format the system context search results
-    const contextString = searchResult.join("\n\n");
-    prompt = `Using the provided context, answer the user question to the best of your ability. You must only use information from the provided context. Combine context into a coherent answer.
-If there is nothing in the context relevant to the user question, just say "Hmm, I don't see anything about that in this document." Don't try to make up an answer.
-Anything between the following \`context\` html blocks is retrieved from a knowledge bank, not part of the conversation with the user.
-<context>
-    ${contextString}
-<context/>
+    let documentString = searchResult.join("\n\n");
+    // Ensure the contextString does not exceed 500 characters
+    if (documentString.length > 500) {
+      documentString = documentString.substring(0, 497) + "...";
+    }
+    prompt = `Using the provided document, answer the user question to the best of your ability. You must try to use information from the provided document. Combine information in the document into a coherent answer.
+If there is nothing in the document relevant to the user question, say "Hmm, I don't see anything about that in this document." before providing any other information you know.
+Anything between the following \`document\` html blocks is retrieved from a knowledge bank, not part of the conversation with the user.
+<document>
+    ${documentString}
+<document/>
 
-If there is no relevant information within the context, just say "Hmm, I don't see anything about that in this document." Don't try to make up an answer. Anything between the preceding 'context' html blocks is retrieved from a knowledge bank, not part of the conversation with the user.
+If there is no relevant information within the document, say "Hmm, I don't see anything about that in this document." before providing any other information you know. Anything between the preceding 'document' html blocks is retrieved from a knowledge bank, not part of the conversation with the user.
 
 Anything between the following \`user\` html blocks is is part of the conversation with the user.
 <user>
   ${msg}
 </user>`;
+    console.log(prompt);
   }
   try {
     await generate(model, prompt, (json) => {
