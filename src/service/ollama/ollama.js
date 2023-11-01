@@ -1,3 +1,5 @@
+const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const { exec } = require("child_process");
 
@@ -50,15 +52,24 @@ class Ollama {
 
     // start the packaged ollama server
     let exe = "";
+    let appDataPath = "";
     switch (process.platform) {
       case "win32":
         exe = "ollama.exe";
+        appDataPath = path.join(os.homedir(), "AppData", "Local", "chatd");
         break;
       case "darwin":
         exe = "ollama-darwin";
+        appDataPath = path.join(
+          os.homedir(),
+          "Library",
+          "Application Support",
+          "chatd"
+        );
         break;
       case "linux":
         exe = "ollama-linux-" + process.arch;
+        appDataPath = path.join(os.homedir(), ".config", "chatd");
         break;
       default:
         reject(new Error(`Unsupported platform: ${process.platform}`));
@@ -67,7 +78,7 @@ class Ollama {
 
     const pathToBinary = path.join(__dirname, "runners", exe);
     try {
-      await this.execServe(pathToBinary);
+      await this.execServe(pathToBinary, appDataPath);
       return OllamaServeType.PACKAGED;
     } catch (err) {
       throw new Error(`Failed to start Ollama: ${err}`);
@@ -75,21 +86,32 @@ class Ollama {
   }
 
   // execServe runs the serve command, and waits for a response
-  async execServe(path) {
+  async execServe(path, appDataDirectory) {
     return new Promise((resolve, reject) => {
-      this.childProcess = exec(path + " serve", (error, stdout, stderr) => {
-        if (error) {
-          reject(`exec error: ${error}`);
-          return;
-        }
+      if (!fs.existsSync(appDataDirectory)) {
+        fs.mkdirSync(appDataDirectory, { recursive: true });
+      }
+      const env = {
+        ...process.env,
+        OLLAMA_MODELS: appDataDirectory,
+      };
+      this.childProcess = exec(
+        path + " serve",
+        { env },
+        (error, stdout, stderr) => {
+          if (error) {
+            reject(`exec error: ${error}`);
+            return;
+          }
 
-        if (stderr) {
-          reject(`ollama stderr: ${stderr}`);
-          return;
-        }
+          if (stderr) {
+            reject(`ollama stderr: ${stderr}`);
+            return;
+          }
 
-        reject(`ollama stdout: ${stdout}`);
-      });
+          reject(`ollama stdout: ${stdout}`);
+        }
+      );
 
       // Once the process is started, try to ping Ollama server.
       this.waitForPing()
