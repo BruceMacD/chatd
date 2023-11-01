@@ -9,6 +9,7 @@ const {
 const os = require("os");
 const path = require("path");
 const winston = require("winston");
+const Store = require("electron-store");
 const {
   getModel,
   setModel,
@@ -20,6 +21,7 @@ const {
   runOllamaModel,
 } = require("./chat.js");
 
+const store = new Store();
 const appVersion = app.getVersion();
 const osType = os.type(); // e.g., 'Darwin', 'Windows_NT', etc.
 const osArch = os.arch(); // e.g., 'x64', 'ia32', etc.
@@ -39,6 +41,17 @@ const logger = winston.createLogger({
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
   app.quit();
+}
+
+function isFirstRun() {
+  if (store.get("firstRun") === undefined) {
+    // If the firstRun key doesn't exist, set it as false, because this is the first run.
+    store.set("firstRun", false);
+    return true;
+  } else {
+    // If the key exists, this isn't the first run.
+    return false;
+  }
 }
 
 const createWindow = () => {
@@ -98,28 +111,30 @@ app.on("ready", () => {
       }
     }
 
-    // Auto-updater logic
-    autoUpdater.setFeedURL({
-      url: updateURL,
-    });
-    autoUpdater.checkForUpdates();
-
-    setInterval(() => {
+    if (!isFirstRun()) {
+      // Auto-updater logic
+      autoUpdater.setFeedURL({
+        url: updateURL,
+      });
       autoUpdater.checkForUpdates();
-    }, 3600000); // Check every hour
 
-    autoUpdater.on("update-available", (info) => {
-      logger.info("Update available");
-    });
+      setInterval(() => {
+        autoUpdater.checkForUpdates();
+      }, 3600000); // Check every hour
 
-    autoUpdater.on("update-downloaded", () => {
-      // The update is ready to be installed on app restart.
-      logger.info("Update downloaded");
-    });
+      autoUpdater.on("update-available", (info) => {
+        logger.info("Update available");
+      });
 
-    autoUpdater.on("error", (err) => {
-      logger.error("Error in auto-updater: ", err);
-    });
+      autoUpdater.on("update-downloaded", () => {
+        // The update is ready to be installed on app restart.
+        logger.info("Update downloaded");
+      });
+
+      autoUpdater.on("error", (err) => {
+        logger.error("Error in auto-updater: ", err);
+      });
+    }
   }
 
   createWindow();
