@@ -1,6 +1,14 @@
-const { app, dialog, BrowserWindow, ipcMain } = require("electron");
+const {
+  app,
+  dialog,
+  BrowserWindow,
+  session,
+  ipcMain,
+  autoUpdater,
+} = require("electron");
+const os = require("os");
 const path = require("path");
-const { session } = require("electron");
+const winston = require("winston");
 const {
   getModel,
   setModel,
@@ -11,6 +19,22 @@ const {
   loadDocument,
   runOllamaModel,
 } = require("./chat.js");
+
+const appVersion = app.getVersion();
+const osType = os.type(); // e.g., 'Darwin', 'Windows_NT', etc.
+const osArch = os.arch(); // e.g., 'x64', 'ia32', etc.
+const updateURL = `https://chatd.ai/api/update?version=${appVersion}&os=${osType}&arch=${osArch}`;
+const logger = winston.createLogger({
+  format: winston.format.simple(),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({
+      filename: path.join(app.getPath("home"), ".chatd", "app.log"),
+      maxSize: 1000000, // 1 MB
+      maxFiles: 1,
+    }),
+  ],
+});
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -50,20 +74,9 @@ app.on("ready", () => {
   ipcMain.on("ollama:run", runOllamaModel);
   ipcMain.on("ollama:stop", stopOllama);
 
-  createWindow();
-
-  // Define a custom Content Security Policy to only allow loading resources from the app's origin.
-  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    callback({
-      responseHeaders: {
-        ...details.responseHeaders,
-        "Content-Security-Policy": ["default-src 'self'"],
-      },
-    });
-  });
-
-  if (process.platform === "darwin" && app.isPackaged) {
-    if (!app.isInApplicationsFolder()) {
+  if (app.isPackaged) {
+    // Check app location
+    if (process.platform === "darwin" && !app.isInApplicationsFolder()) {
       const chosen = dialog.showMessageBoxSync({
         type: "question",
         buttons: ["Move to Applications", "Do Not Move"],
@@ -84,7 +97,42 @@ app.on("ready", () => {
         }
       }
     }
+
+    // Auto-updater logic
+    autoUpdater.setFeedURL({
+      url: updateURL,
+    });
+    autoUpdater.checkForUpdates();
+
+    setInterval(() => {
+      autoUpdater.checkForUpdates();
+    }, 3600000); // Check every hour
+
+    autoUpdater.on("update-available", (info) => {
+      logger.info("Update available");
+    });
+
+    autoUpdater.on("update-downloaded", () => {
+      // The update is ready to be installed on app restart.
+      logger.info("Update downloaded");
+    });
+
+    autoUpdater.on("error", (err) => {
+      logger.error("Error in auto-updater: ", err);
+    });
   }
+
+  createWindow();
+
+  // Define a custom Content Security Policy to only allow loading resources from the app's origin.
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        "Content-Security-Policy": ["default-src 'self'"],
+      },
+    });
+  });
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

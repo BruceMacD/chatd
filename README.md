@@ -47,3 +47,7 @@ APPLE_TEAM_ID=ABCDEF1234
 You can find your Apple ID, Apple Team ID, and Apple ID Application in your Apple Developer account. You can create an app-specific password [here](https://appleid.apple.com/account/manage).
 
 5. Run `npm run package` to package the app.
+
+### Windows
+
+### Linux
