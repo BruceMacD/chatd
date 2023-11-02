@@ -68,7 +68,7 @@ class Ollama {
         );
         break;
       case "linux":
-        exe = "ollama-linux-" + process.arch;
+        exe = "ollama-linux"; // x64 only
         appDataPath = path.join(os.homedir(), ".config", "chatd");
         break;
       default:

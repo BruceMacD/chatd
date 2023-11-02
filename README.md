@@ -57,3 +57,7 @@ You can find your Apple ID, Apple Team ID, and Apple ID Application in your Appl
 Note: The Windows app is not signed, so you will get a warning when you run it.
 
 ### Linux
+
+1. Build Ollama from source for Linux x64 to support CPU only, this allows for a smaller executable package. See [here](https://github.com/jmorganca/ollama).
+2. Copy the `ollama` executable to `chatd/src/service/ollama/runners/ollama-linux`.
+3. Run `npm run package` to package the app.
