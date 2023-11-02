@@ -2,6 +2,8 @@
     <img src="./screenshots/logo.png" width="300">
 </div>
 
+https://github.com/BruceMacD/chatd/assets/5853428/a7d8b77c-beae-41a4-bfd6-0fd5cf932b43
+
 Chat with your documents using local AI. All your data stays on your computer and is never sent to the cloud. Chatd is a completely private and secure way to interact with your documents.
 
 Chatd is a desktop application that lets you use a local large language model (`Mistral-7B`) to chat with your documents. What makes chatd different from other "chat with local documents" apps is that it comes with the local LLM runner packaged in. This means that you don't need to install anything else to use chatd, just run the executable.
@@ -13,6 +15,11 @@ Chatd uses Ollama to run the LLM. Ollama is an LLM server that provides a cross-
     <img src="./screenshots/welcome_screen.png" width="30%"></img>
     <img src="./screenshots/home_screen.png" width="30%"></img>
 </div>
+
+## Quickstart
+1. Download the latest release from [chatd.ai](https://chatd.ai) or the [releases page](https://github.com/BruceMacD/chatd/releases).
+2. Unzip the downloaded file.
+3. Run the `chatd` executable.
 
 ## Links
 
