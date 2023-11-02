@@ -2,7 +2,7 @@
     <img src="./screenshots/logo.png" width="300">
 </div>
 
-https://github.com/BruceMacD/chatd/assets/5853428/a7d8b77c-beae-41a4-bfd6-0fd5cf932b43
+[See a video demo.](https://github.com/BruceMacD/chatd/assets/5853428/a7d8b77c-beae-41a4-bfd6-0fd5cf932b43)
 
 Chat with your documents using local AI. All your data stays on your computer and is never sent to the cloud. Chatd is a completely private and secure way to interact with your documents.
 
