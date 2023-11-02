@@ -1,5 +1,5 @@
 Runners in this directory are packaged with chatd at build time.
 
 MacOS: `ollama-darwin`
-Linux: `ollama-linux-amd64`
+Linux: `ollama-linux`
 Windows: `ollama.exe`
