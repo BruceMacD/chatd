@@ -54,4 +54,6 @@ You can find your Apple ID, Apple Team ID, and Apple ID Application in your Appl
 2. Copy the `ollama.exe` executable to `chatd/src/service/ollama/runners/ollama.exe`.
 3. Run `npm run package` to package the app.
 
+Note: The Windows app is not signed, so you will get a warning when you run it.
+
 ### Linux
