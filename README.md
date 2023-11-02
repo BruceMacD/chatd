@@ -50,4 +50,8 @@ You can find your Apple ID, Apple Team ID, and Apple ID Application in your Appl
 
 ### Windows
 
+1. Build Ollama from source for Windows, this will support CPU only. See [here](https://github.com/jmorganca/ollama).
+2. Copy the `ollama.exe` executable to `chatd/src/service/ollama/runners/ollama.exe`.
+3. Run `npm run package` to package the app.
+
 ### Linux
