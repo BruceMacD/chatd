@@ -4,8 +4,8 @@ const path = require("path");
 const { exec } = require("child_process");
 
 var OllamaServeType = {
-  SYSTEM: "system",
-  PACKAGED: "packaged",
+  SYSTEM: "system", // ollama is installed on the system
+  PACKAGED: "packaged", // ollama is packaged with the app
 };
 
 class Ollama {
@@ -14,7 +14,7 @@ class Ollama {
 
   constructor() {
     this.childProcess = null;
-    this.host = "http://127.0.0.1:11434";
+    this.host = "http://127.0.0.1:11434"; // TODO: check OLLAMA_HOST env var
     this.abort = new AbortController();
   }
 
@@ -148,7 +148,7 @@ class Ollama {
     const reader = response.body.getReader();
 
     // Reads the stream until the pull is complete
-    //  or when the stream is closed by the server
+    // or when the stream is closed by the server
     while (true) {
       const { done, value } = await reader.read();
 
@@ -185,6 +185,7 @@ class Ollama {
 
     if (os.platform() === "win32") {
       // Windows: Use taskkill to force kill the process tree
+      // This makes sure the child process isn't left running
       exec(`taskkill /pid ${this.childProcess.pid} /f /t`, (err) => {
         if (err) {
           console.error(
@@ -216,6 +217,8 @@ class Ollama {
 
   /**
    * Sends a ping to the LLM to see if it is running.
+   * @throws {Error}
+   * @return {Promise<boolean>} True if the server is running.
    */
   async ping() {
     const response = await fetch(this.host, {
@@ -310,6 +313,9 @@ class Ollama {
     }
   }
 
+  /**
+   * Aborts the current request.
+   */
   abortRequest() {
     if (this.abort) {
       this.abort.abort();

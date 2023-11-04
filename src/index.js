@@ -58,13 +58,9 @@ const createWindow = () => {
   }
 };
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.on("ready", () => {
   // Add a handler for the interprocess events. This enables 2-way communication
   // between the renderer process (UI) and the main process.
-  // https://www.electronjs.org/docs/latest/tutorial/ipc#pattern-2-renderer-to-main-two-way
   ipcMain.on("model:set", setModel);
   ipcMain.on("model:get", getModel);
   ipcMain.on("chat:send", sendChat);
@@ -100,7 +96,6 @@ app.on("ready", () => {
 
     // TODO: auto-update on Windows, there is a squirrel error that needs to be fixed
     if (!process.platform === "win32") {
-      // Auto-updater logic
       autoUpdater.setFeedURL({
         url: updateURL,
       });
@@ -127,7 +122,7 @@ app.on("ready", () => {
 
   createWindow();
 
-  // Define a custom Content Security Policy to only allow loading resources from the app's origin.
+  // Define a custom Content Security Policy to only allow loading resources from the app's origin, this is needed to call across the interprocess boundary
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {

@@ -64,10 +64,8 @@ window.electronAPI.onOllamaRun((event, data) => {
 
 // Update the display when a document is loaded
 window.electronAPI.onDocumentLoaded((event, data) => {
-  // change the button to say the name of the document
   document.getElementById("file-spinner").style.display = "none";
-  fileButtonText.innerText = data.content;
-  // add an x button to remove the document
+  fileButtonText.innerText = data.content; // change the button to say the name of the document
   userInput.focus();
 });
 
@@ -92,16 +90,12 @@ userInput.addEventListener("keydown", function (event) {
     historyMessage.innerText = message;
     historyContainer.appendChild(historyMessage);
 
-    // Reset responseElem
-    responseElem = document.createElement("div");
-    responseElem.className = "history-chat-response";
-
-    // add the element that will display the response
+    // Add the element that will display the response
     responseElem = document.createElement("div");
     responseElem.className = "history-chat-response";
     historyContainer.appendChild(responseElem);
 
-    // add loading animation
+    // Add loading animation
     const loadingAnimation = document.createElement("div");
     loadingAnimation.className = "dots-loading";
     for (let i = 0; i < 3; i++) {
@@ -113,6 +107,7 @@ userInput.addEventListener("keydown", function (event) {
     // Send chat to Ollama server
     window.electronAPI.sendChat(message);
     chatView.scrollTop = chatView.scrollHeight;
+    // The response will be received in the onChatReply event
   }
 });
 
@@ -126,6 +121,7 @@ window.electronAPI.onChatReply((event, data) => {
 
   if (!data.success) {
     if (data.content !== "The operation was aborted.") {
+      // Don't display an error if the user stopped the request
       responseElem.innerText = "Error: " + data.content;
     }
     stopRequestContainer.style.display = "none";
@@ -139,12 +135,13 @@ window.electronAPI.onChatReply((event, data) => {
   }
 
   if (data.content.done) {
+    // The chat is done, remove the stop request button and re-enable input
     stopRequestContainer.style.display = "none";
     userInput.disabled = false;
     userInput.focus();
   }
 
-  // Check if the user is already at the bottom of the content
+  // Check if the view is already at the bottom of the content
   const isAtBottom =
     chatView.scrollTop + chatView.clientHeight >= chatView.scrollHeight - 50; // 10 is a tolerance value
 
@@ -162,6 +159,7 @@ openFileButton.addEventListener("click", () => {
   window.electronAPI.loadDocument();
 });
 
+// Stop request button that appears when a request is in progress
 stopRequestBtn.addEventListener("click", () => {
   window.electronAPI.stopChat();
   stopRequestContainer.style.display = "none";
@@ -174,7 +172,7 @@ settingsIcon.addEventListener("click", () => {
   modelSelectInput.value = window.electronAPI.getModel();
 });
 
-// A modelGet response means the settings view should be displayed
+// A modelGet response means the settings view should be displayed, it is checking what the current loaded model is
 window.electronAPI.onModelGet((event, data) => {
   if (!data.success) {
     console.log("Error getting model: " + data.content);
@@ -184,11 +182,13 @@ window.electronAPI.onModelGet((event, data) => {
   settingsView.style.display = "flex";
 });
 
+// Cancel button in the settings view
 settingsCancelBtn.addEventListener("click", () => {
   chatView.style.display = "block";
   settingsView.style.display = "none";
 });
 
+// Save button in the settings view
 settingsSaveBtn.addEventListener("click", () => {
   window.electronAPI.setModel(modelSelectInput.value);
   chatView.style.display = "block";

@@ -16,7 +16,7 @@ class ExtractorPipeline {
   }
 }
 
-// The run function is used by the `transformers:embed` event handler.
+// The run function is used by the `doc:load` event handler.
 async function embed(documents) {
   // Load the model
   const extractor = await ExtractorPipeline.getInstance();

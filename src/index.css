@@ -28,7 +28,7 @@ textarea {
     border: none;
     resize: none; /* This will prevent users from resizing the textarea manually */
     overflow-y: hidden; /* In case the text exceeds the height */
-    height: auto; /* This will ensure the height changes according to the content, but you can set a fixed height if needed */
+    height: auto; /* This will ensure the height changes according to the content */
 }
 
 textarea:focus {
