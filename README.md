@@ -17,9 +17,14 @@ Chatd uses Ollama to run the LLM. Ollama is an LLM server that provides a cross-
 </div>
 
 ## Quickstart
+
 1. Download the latest release from [chatd.ai](https://chatd.ai) or the [releases page](https://github.com/BruceMacD/chatd/releases).
 2. Unzip the downloaded file.
 3. Run the `chatd` executable.
+
+## Advanced Setup
+
+- [Enable GPU support.](docs/enable_gpu_support.md)
 
 ## Links
 
