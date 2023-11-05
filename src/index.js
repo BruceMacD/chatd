@@ -20,6 +20,10 @@ const {
   runOllamaModel,
 } = require("./chat.js");
 
+// When debug is set to true, the app will log debug messages to the console
+// This will be turned on by default when running the app in non-packaged mode
+global.debug = false;
+
 const appVersion = app.getVersion();
 const osType = os.type(); // e.g., 'Darwin', 'Windows_NT', etc.
 const osArch = os.arch(); // e.g., 'x64', 'ia32', etc.
@@ -54,6 +58,7 @@ const createWindow = () => {
   mainWindow.loadFile(path.join(__dirname, "index.html"));
 
   if (!app.isPackaged) {
+    global.debug = true;
     mainWindow.webContents.openDevTools();
   }
 };

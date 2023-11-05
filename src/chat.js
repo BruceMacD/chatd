@@ -18,6 +18,12 @@ const {
 
 let model = "mistral";
 
+function debugLog(msg) {
+  if (global.debug) {
+    console.log(msg);
+  }
+}
+
 async function setModel(event, msg) {
   model = msg;
 }
@@ -84,6 +90,8 @@ Anything between the following \`user\` html blocks is is part of the conversati
 </user>`;
   }
   try {
+    debugLog("Sending prompt to Ollama...");
+    debugLog(prompt);
     await generate(model, prompt, (json) => {
       // Reply with the content every time we receive data
       event.reply("chat:reply", { success: true, content: json });
@@ -119,6 +127,8 @@ async function loadDocument(event) {
 
     // get the embeddings for the document content
     const texts = documents.map(({ pageContent }) => pageContent);
+    debugLog("Parsed content...");
+    debugLog(texts);
     const embeddings = await embed(texts);
 
     // store the embeddings
