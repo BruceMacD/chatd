@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs").promises;
 const { dialog } = require("electron");
-const pdf = require("pdf-parse");
+const { readPDF } = require("./pdf.js");
 
 async function openFile() {
   const options = {
@@ -24,14 +24,11 @@ async function openFile() {
 
   let content;
   if (filePath.endsWith(".pdf")) {
-    const dataBuffer = await fs.readFile(filePath);
-    const data = await pdf(dataBuffer);
-    content = data.text;
-  } else {
-    content = await fs.readFile(filePath, "utf-8");
+    return await readPDF(filePath);
   }
-
+  content = await fs.readFile(filePath, "utf-8");
   return {
+    // TODO: update this to return content array
     fileName: path.basename(filePath),
     content: content,
   };

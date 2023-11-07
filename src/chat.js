@@ -1,6 +1,6 @@
 const { Document } = require("langchain/document");
 const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
-const { openFile } = require("./service/file.js");
+const { openFile } = require("./service/document/file.js");
 const { embed } = require("./service/embedding.js");
 const {
   store,
@@ -112,24 +112,14 @@ async function loadDocument(event) {
 
     // read the document
     const doc = await openFile();
-
-    // split the document content for retrieval
-    const splitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 500,
-      chunkOverlap: 50,
-    });
-    const documents = await splitter.splitDocuments([
-      new Document({ pageContent: doc.content }),
-    ]);
-    if (documents.length === 0) {
+    if (doc.content.length === 0) {
       return;
     }
 
     // get the embeddings for the document content
-    const texts = documents.map(({ pageContent }) => pageContent);
     debugLog("Parsed content...");
-    debugLog(texts);
-    const embeddings = await embed(texts);
+    debugLog(doc);
+    const embeddings = await embed(doc);
 
     // store the embeddings
     store(embeddings);
