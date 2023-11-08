@@ -16,16 +16,11 @@ async function readPDF(filePath) {
 }
 
 function cleanPDFData(data) {
-  // This function cleans the entire text by removing non-meaningful characters
-  const cleanEntireText = (text) => {
-    let cleanedText = text.replace(/\n/g, " "); // Replace newlines with spaces
-    cleanedText = cleanedText.replace(/\s+/g, " "); // Replace multiple spaces with single space
-    cleanedText = cleanedText.replace(/\[\d+\]/g, ""); // Remove citation numbers like [85]
-    cleanedText = cleanedText.replace(/https?:\/\/\S+/g, ""); // Remove URLs
-    return cleanedText.trim();
-  };
-
-  const cleanedText = cleanEntireText(data.text);
+  // remove non-meaningful characters
+  let cleanedText = data.text.replace(/\n/g, " "); // Replace newlines with spaces
+  cleanedText = cleanedText.replace(/\s+/g, " "); // Replace multiple spaces with single space
+  cleanedText = cleanedText.replace(/\[\d+\]/g, ""); // Remove citation numbers like [85]
+  cleanedText = cleanedText.replace(/https?:\/\/\S+/g, ""); // Remove URLs
 
   // This regex pattern attempts to split the text into sentences based on periods
   const sentenceRegex = /(?<!\w\.\w)(?<![A-Z][a-z]\.)(?<=[.!?])\s+(?=[A-Z])/g;
