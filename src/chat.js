@@ -85,7 +85,8 @@ If there is no relevant information within the document, say "Hmm, I don't see a
 Anything between the following \`user\` html blocks is is part of the conversation with the user.
 <user>
   ${msg}
-</user>`;
+</user>
+`;
   }
   try {
     debugLog("Sending prompt to Ollama...");
