@@ -32,7 +32,7 @@ class MemoryVectorStore {
 
   addEmbeddings(embeddings) {
     const vectors = embeddings.map((item) => {
-      return new MemoryVector(item.document, item.embedding);
+      return new MemoryVector(item.content, item.embedding);
     });
     this.memoryVectors = this.memoryVectors.concat(vectors);
   }

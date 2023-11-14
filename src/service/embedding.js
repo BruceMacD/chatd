@@ -16,23 +16,34 @@ class ExtractorPipeline {
   }
 }
 
-// The run function is used by the `doc:load` event handler.
+// The embed function is used by the `doc:load` event handler.
 async function embed(doc) {
   // Load the model
   const extractor = await ExtractorPipeline.getInstance();
 
   // Extract the embeddings
-  var embeddings = [];
-  for (const line of doc.content) {
-    const output = await extractor(line, {
-      pooling: "mean",
-      normalize: true,
+  let embeddings = [];
+  // Using an array to store promises from the forEach loop
+  let promiseArray = [];
+
+  doc.data.forEach((data) => {
+    data.content.forEach((line) => {
+      // Create a promise for each line and process it
+      const promise = extractor(line, {
+        pooling: "mean",
+        normalize: true,
+      }).then((output) => {
+        embeddings.push({
+          content: line,
+          embedding: Array.from(output.data),
+        });
+      });
+      promiseArray.push(promise);
     });
-    embeddings.push({
-      document: line,
-      embedding: Array.from(output.data),
-    });
-  }
+  });
+
+  // Wait for all promises to resolve
+  await Promise.all(promiseArray);
   return embeddings;
 }
 

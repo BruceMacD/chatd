@@ -1,4 +1,4 @@
-const { openFile } = require("./service/document/file.js");
+const { openFile } = require("./service/document/reader.js");
 const { embed } = require("./service/embedding.js");
 const {
   store,
@@ -65,7 +65,14 @@ async function runOllamaModel(event, msg) {
 async function sendChat(event, msg) {
   let prompt = msg;
   if (vectorStoreSize() > 0) {
-    const msgEmbeds = await embed({ content: [msg] });
+    const msgEmbeds = await embed({
+      data: [
+        {
+          section: "",
+          content: [msg],
+        },
+      ],
+    });
     const searchResult = search(msgEmbeds[0].embedding, 20);
     // format the system context search results
     let documentString = searchResult.join("\n\n");
@@ -111,7 +118,7 @@ async function loadDocument(event) {
 
     // read the document
     const doc = await openFile();
-    if (doc.content.length === 0) {
+    if (doc.data.length === 0) {
       return;
     }
 
