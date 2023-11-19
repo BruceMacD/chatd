@@ -19,9 +19,19 @@ function splitText(text) {
   cleanedText = removeImages(cleanedText);
   cleanedText = removeHyperlinks(cleanedText);
 
-  // This regex pattern attempts to split the text into sentences based on periods
-  const sentenceRegex = /(?<!\w\.\w)(?<![A-Z][a-z]\.)(?<=[.!?])\s+(?=[A-Z])/g;
-  return cleanedText.split(sentenceRegex);
+  if (cleanedText.includes(".")) {
+    // This regex pattern attempts to split the text into sentences based on periods
+    const sentenceRegex = /(?<!\w\.\w)(?<![A-Z][a-z]\.)(?<=[.!?])\s+(?=[A-Z])/g;
+    return cleanedText.split(sentenceRegex);
+  }
+  
+  // there are no periods, so just split by chunks of 100 characters
+  const chunkSize = 100;
+  const chunks = [];
+  for (let i = 0; i < cleanedText.length; i += chunkSize) {
+    chunks.push(cleanedText.substring(i, i + chunkSize));
+  }
+  return chunks;
 }
 
 module.exports = {

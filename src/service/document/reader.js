@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs").promises;
 const { dialog } = require("electron");
-const { parsePdf, parseMd, parseTxt } = require("./parse");
+const { parsePdf, parseMd, parseTxt, parseDocx } = require("./parse");
 
 async function openFile() {
   const options = {
@@ -9,7 +9,7 @@ async function openFile() {
     filters: [
       {
         name: "Text Files",
-        extensions: ["txt", "md", "json", "csv", "xml", "pdf"],
+        extensions: ["docx", "md", "pdf", "txt"],
       },
     ],
   };
@@ -24,14 +24,20 @@ async function openFile() {
   const fileExtension = path.extname(filePath).toLowerCase();
 
   switch (fileExtension) {
-    case ".pdf":
-      return await parsePdf(filePath);
+    case ".docx":
+      const docx = await fs.readFile(filePath);
+      return {
+        fileName: path.basename(filePath),
+        data: await parseDocx(docx),
+      };
     case ".md":
       let markdown = await fs.readFile(filePath, "utf-8");
       return {
         fileName: path.basename(filePath),
         data: parseMd(markdown),
       };
+    case ".pdf":
+      return await parsePdf(filePath);
     default:
       // just try to parse it as a text file
       let rawText = await fs.readFile(filePath, "utf-8");

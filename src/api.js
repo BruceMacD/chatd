@@ -123,8 +123,13 @@ async function loadDocument(event) {
     }
 
     // get the embeddings for the document content
-    debugLog("Parsed content...");
-    debugLog(doc);
+    if (doc && doc.data) {
+      debugLog("Parsed content...");
+      for (const section of doc.data) {
+        debugLog(section.section);
+        debugLog(section.content);
+      }
+    }
     const embeddings = await embed(doc);
 
     // store the embeddings
