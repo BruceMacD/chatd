@@ -16,8 +16,6 @@ function splitText(text) {
   cleanedText = removeCitations(cleanedText); // Remove citation numbers like [85]
   cleanedText = removeHyperlinks(cleanedText); // Remove hyperlinks
   cleanedText = removeImages(cleanedText); // Remove images
-  cleanedText = removeImages(cleanedText);
-  cleanedText = removeHyperlinks(cleanedText);
 
   if (cleanedText.includes(".")) {
     // This regex pattern attempts to split the text into sentences based on periods

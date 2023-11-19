@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs").promises;
 const { dialog } = require("electron");
-const { parsePdf, parseMd, parseTxt, parseDocx } = require("./parse");
+const { parsePdf, parseMd, parseOdt, parseTxt, parseDocx } = require("./parse");
 
 async function openFile() {
   const options = {
@@ -9,7 +9,7 @@ async function openFile() {
     filters: [
       {
         name: "Text Files",
-        extensions: ["docx", "md", "pdf", "txt"],
+        extensions: ["docx", "md", "odt", "pdf", "txt"],
       },
     ],
   };
@@ -35,6 +35,11 @@ async function openFile() {
       return {
         fileName: path.basename(filePath),
         data: parseMd(markdown),
+      };
+    case ".odt":
+      return {
+        fileName: path.basename(filePath),
+        data: await parseOdt(filePath),
       };
     case ".pdf":
       return await parsePdf(filePath);

@@ -1,21 +1,18 @@
 const mammoth = require("mammoth");
-const { splitText } = require("./clean");
+const { removeCitations, removeHyperlinks } = require("./clean");
+const { extractSectionsAndContent } = require('./html');
 
 async function parseDocx(docx) {
-  // TODO: can convert to html here to get a better idea of the structure
-  const result = await mammoth.extractRawText({ buffer: docx });
-  const text = result.value;
+  let doc = await mammoth.convertToHtml({ buffer: docx });
 
-  if (!text) {
+  if (!doc.value) {
     return []
   }
 
-  return  [
-      {
-        section: "",
-        content: splitText(text),
-      },
-    ];
+  let html = removeCitations(doc.value);
+  html = removeHyperlinks(html);
+
+  return extractSectionsAndContent(html);
 }
 
 module.exports = {
