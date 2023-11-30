@@ -126,6 +126,12 @@ button:focus {
     overflow-y: auto;
 }
 
+/* overide prism markdown styles */
+pre[class*=language-] {
+    border: none !important;
+    box-shadow: none !important;
+}
+
 #settings-view {
     display: none;
     width: 100%;

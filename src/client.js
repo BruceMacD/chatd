@@ -131,7 +131,7 @@ window.electronAPI.onChatReply((event, data) => {
   }
 
   if (data.content.response) {
-    responseElem.innerText += data.content.response; // Append to existing text
+    displayResponse(data.content);
   }
 
   if (data.content.done) {
@@ -150,6 +150,72 @@ window.electronAPI.onChatReply((event, data) => {
     chatView.scrollTop = chatView.scrollHeight;
   }
 });
+
+let responseBuffer = '';
+let isBufferingMarkdown = false;
+
+// Update the display when a response is received from the Ollama server
+function displayResponse(response) {
+  responseBuffer += response.response;
+
+  if (isBufferingMarkdown || responseBuffer.includes('```')) {
+    processMarkdownResponse();
+  } else if (!responseBuffer.endsWith('`') || response.done) {
+    // display regular text
+    displayRegularText(responseBuffer);
+    responseBuffer = '';
+  }
+}
+
+function displayRegularText(text) {
+  const textNode = document.createTextNode(text);
+  responseElem.appendChild(textNode);
+}
+
+function processMarkdownResponse() {
+  if (!isBufferingMarkdown) {
+    // Write out any text before the Markdown block
+    const splitIndex = responseBuffer.indexOf('```');
+    const textBeforeMarkdown = responseBuffer.substring(0, splitIndex);
+    displayRegularText(textBeforeMarkdown);
+    // Set the buffer to the content after the initial ```
+    responseBuffer = responseBuffer.substring(splitIndex);
+
+    // Handle the start of a Markdown block
+    const markdownElem = document.createElement('pre');
+    const codeElem = document.createElement('code');
+    codeElem.className = 'language-markdown';
+    markdownElem.appendChild(codeElem);
+    responseElem.appendChild(markdownElem);
+
+    isBufferingMarkdown = true;
+  }
+
+  // Update Markdown content and apply highlighting
+  if (isBufferingMarkdown) {
+    let contentAfterMarkdown = ''; // this will store any content after the closing ``` if there is any
+    // Check if there is more than one occurrence of '```', which indicates the end of the Markdown block
+    if (responseBuffer.match(/```/g)?.length > 1) {
+      // Clear the buffer for the next content after the closing ```
+      const endIndex = responseBuffer.lastIndexOf('```') + 3;
+      contentAfterMarkdown = responseBuffer.substring(endIndex);
+      responseBuffer = responseBuffer.substring(0, endIndex); // cut off the content after the closing ```
+      isBufferingMarkdown = false;
+    }
+
+    // Update the Markdown content
+    const markdownElems = document.querySelectorAll('pre > .language-markdown');
+    const lastMarkdownElem = markdownElems[markdownElems.length - 1];
+    lastMarkdownElem.textContent = responseBuffer;
+    Prism.highlightElement(lastMarkdownElem);
+
+    // if the Markdown block is done, append any content after the closing ```
+    if (!isBufferingMarkdown) {
+      displayRegularText(contentAfterMarkdown);
+      responseBuffer = '';
+    }
+  }
+}
 
 // Open file dialog
 openFileButton.addEventListener("click", () => {
