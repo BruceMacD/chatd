@@ -45,10 +45,10 @@ npm run start
 
 ### MacOS
 
-1. Download the latest Ollama release for MacOS from [here](https://github.com/jmorganca/ollama/releases).
-2. Unzip the downloaded file.
-3. Copy the `ollama` executable to `chatd/src/service/ollama/runners/ollama-darwin`.
-4. The Electron app should be signed to be able to run on MacOS, so you need a developer certificate. To sign the app, set the following environment variables:
+1. Download the latest `ollama-darwin` release for MacOS from [here](https://github.com/jmorganca/ollama/releases).
+2. Make the downloaded binary executable: `chmod +x path/to/ollama-darwin`
+3. Copy the `ollama-darwin` executable to the `chatd/src/service/ollama/runners` directory.
+4. Optional: The Electron app needs be signed to be able to run on MacOS systems other than the one it was compiled on, so you need a developer certificate. To sign the app, set the following environment variables:
 
 ```bash
 APPLE_ID=your_apple_id@example.com
