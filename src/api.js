@@ -9,7 +9,7 @@ const {
 const {
   abort,
   run,
-  generate,
+  chat,
   stop,
   serve,
 } = require("./service/ollama/ollama.js");
@@ -98,7 +98,7 @@ Anything between the following \`user\` html blocks is is part of the conversati
   try {
     debugLog("Sending prompt to Ollama...");
     debugLog(prompt);
-    await generate(model, prompt, (json) => {
+    await chat(model, prompt, (json) => {
       // Reply with the content every time we receive data
       event.reply("chat:reply", { success: true, content: json });
     });

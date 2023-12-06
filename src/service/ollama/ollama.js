@@ -10,12 +10,12 @@ var OllamaServeType = {
 
 class Ollama {
   static instance = null;
-  static context = null; // stores the chat history for the current session
 
   constructor() {
     this.childProcess = null;
     this.host = "http://127.0.0.1:11434"; // TODO: check OLLAMA_HOST env var
     this.abort = new AbortController();
+    this.messages = []; // stores the messages history for the current session
   }
 
   static getOllama() {
@@ -171,11 +171,6 @@ class Ollama {
   }
 
   async run(model, fn) {
-    await this.pull(model, fn);
-    await this.generate(model, "", fn);
-    this.context = null;
-  }
-  async run(model, fn) {
     try {
         await this.pull(model, fn);
     } catch (error) {
@@ -185,9 +180,9 @@ class Ollama {
         }
         console.log('chatd is running offline, failed to pull');
     }
-    await this.generate(model, "", fn);
-    this.context = null;
-}
+    await this.chat(model, "", fn);
+    this.messages = [];
+  }
 
   stop() {
     if (!this.childProcess) {
@@ -211,8 +206,8 @@ class Ollama {
     this.childProcess = null;
   }
 
-  clearHistory() {
-    this.context = null;
+  clearMessages() {
+    this.messages = [];
   }
 
   /**
@@ -266,7 +261,7 @@ class Ollama {
   }
 
   /**
-   * Sends a prompt to the LLM, parses the stream and runs a callback.
+   * Sends a message to the LLM, parses the stream and runs a callback.
    *
    * @param {string}   model   One of the installed models to use, e.g: 'llama2'.
    * @param {string}   prompt  The question to ask the LLM.
@@ -276,14 +271,19 @@ class Ollama {
    *
    * @return {Promise<undefined>}
    */
-  async generate(model, prompt, fn) {
+  async chat(model, prompt, fn) {
+    this.messages.push({
+      "role": "user",
+      "content": prompt,
+    });
+
     const body = JSON.stringify({
       model: model,
       prompt: prompt,
-      context: this.context,
+      messages: this.messages,
     });
 
-    const response = await fetch(this.host + "/api/generate", {
+    const response = await fetch(this.host + "/api/chat", {
       method: "POST",
       body,
       cache: "no-store",
@@ -299,8 +299,9 @@ class Ollama {
 
     const reader = response.body.getReader();
 
-    // Reads the stream until the prompt is fulfilled
-    //  or when the stream is closed by the server
+    // Reads the stream until the message is fulfilled
+    // or when the stream is closed by the server
+    let assistant = {role: "assistant", content: ""}
     while (true) {
       const { done, value } = await reader.read();
 
@@ -317,8 +318,11 @@ class Ollama {
         fn(json);
 
         if (json.done) {
-          this.context = json.context;
+          this.messages.push(assistant);
           return;
+        } else {
+          assistant.role = json.message.role;
+          assistant.content += json.message.content;
         }
       }
     }
@@ -340,9 +344,9 @@ async function run(model, fn) {
   return await ollama.run(model, fn);
 }
 
-async function generate(model, prompt, fn) {
+async function chat(model, prompt, fn) {
   const ollama = Ollama.getOllama();
-  return await ollama.generate(model, prompt, fn);
+  return await ollama.chat(model, prompt, fn);
 }
 
 function abort() {
@@ -372,7 +376,7 @@ function serve() {
 
 module.exports = {
   run,
-  generate,
+  chat,
   abort,
   ping,
   clearHistory,

@@ -130,8 +130,8 @@ window.electronAPI.onChatReply((event, data) => {
     return;
   }
 
-  if (data.content.response) {
-    displayResponse(data.content);
+  if (data.content.message) {
+    displayResponse(data.content.message);
   }
 
   if (data.content.done) {
@@ -156,7 +156,7 @@ let isBufferingMarkdown = false;
 
 // Update the display when a response is received from the Ollama server
 function displayResponse(response) {
-  responseBuffer += response.response;
+  responseBuffer += response.content;
 
   if (isBufferingMarkdown || responseBuffer.includes('```')) {
     processMarkdownResponse();
