@@ -1,6 +1,7 @@
 const odt2html = require('odt2html');
 const { removeCitations, removeHyperlinks } = require("./clean");
 const { extractSectionsAndContent } = require('./html');
+const { error } = require("../../logger.js");
 
 async function parseOdt(odtFilePath) {
   try {
@@ -14,8 +15,8 @@ async function parseOdt(odtFilePath) {
     html = removeHyperlinks(html);
 
     return extractSectionsAndContent(html);
-  } catch (error) {
-    console.error("Error parsing ODT file:", error);
+  } catch (err) {
+    error("Error parsing ODT file:", err);
     return [];
   }
 }

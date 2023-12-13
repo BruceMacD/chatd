@@ -2,6 +2,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { exec } = require("child_process");
+const { info, error } = require("../logger.js");
 
 var OllamaServeType = {
   SYSTEM: "system", // ollama is installed on the system
@@ -38,7 +39,7 @@ class Ollama {
       return OllamaServeType.SYSTEM;
     } catch (err) {
       // this is fine, we just need to start ollama
-      console.log(err);
+      info(`Ollama is not running: ${err}`);
     }
 
     try {
@@ -47,7 +48,7 @@ class Ollama {
       return OllamaServeType.SYSTEM;
     } catch (err) {
       // ollama is not installed, run the binary directly
-      console.log(`exec ollama: ${err}`);
+      info(`Ollama is not installed on the system: ${err}`);
     }
 
     // start the packaged ollama server
@@ -81,6 +82,7 @@ class Ollama {
       await this.execServe(pathToBinary, appDataPath);
       return OllamaServeType.PACKAGED;
     } catch (err) {
+      error(`Failed to start Ollama: ${err}`);
       throw new Error(`Failed to start Ollama: ${err}`);
     }
   }
@@ -142,6 +144,7 @@ class Ollama {
       let err = `HTTP Error (${response.status}): `;
       err += await response.text();
 
+      error(err);
       throw new Error(err);
     }
 
@@ -153,6 +156,7 @@ class Ollama {
       const { done, value } = await reader.read();
 
       if (done) {
+        error("failed to pull model");
         throw new Error("failed to pull");
       }
 
@@ -173,12 +177,11 @@ class Ollama {
   async run(model, fn) {
     try {
         await this.pull(model, fn);
-    } catch (error) {
-      console.log(error)
-        if (!error.message.includes("failed to pull")) {
-            throw error;
-        }
-        console.log('chatd is running offline, failed to pull');
+    } catch (err) {
+      error(`chatd is running offline, failed to pull: ${err}`)
+      if (!err.message.includes("failed to pull")) {
+          throw err;
+      }
     }
     await this.chat(model, "", fn);
     this.messages = [];
@@ -194,7 +197,7 @@ class Ollama {
       // This makes sure the child process isn't left running
       exec(`taskkill /pid ${this.childProcess.pid} /f /t`, (err) => {
         if (err) {
-          console.error(
+          error(
             `Failed to kill process ${this.childProcess.pid}: ${err}`
           );
         }
@@ -233,10 +236,11 @@ class Ollama {
     });
 
     if (response.status !== 200) {
+      error(`failed to ping Ollama server: ${response.status}`)
       throw new Error("Failed to ping Ollama server");
     }
 
-    console.log("Ollama server is running");
+    info("Ollama server is running");
 
     return true;
   }
@@ -253,10 +257,12 @@ class Ollama {
         await this.ping();
         return;
       } catch (error) {
-        console.log("Waiting for Ollama server...");
+        info("Waiting for Ollama server...");
+        info(error);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
+    error("Max retries reached. Ollama server didn't respond.");
     throw new Error("Max retries reached. Ollama server didn't respond.");
   }
 
@@ -294,6 +300,7 @@ class Ollama {
       let err = `HTTP Error (${response.status}): `;
       err += await response.text();
 
+      error('chat request failed: ' + err);
       throw new Error(err);
     }
 
