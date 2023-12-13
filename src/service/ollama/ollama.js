@@ -2,6 +2,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { exec } = require("child_process");
+const { logInfo, logErr } = require("../logger.js");
 
 var OllamaServeType = {
   SYSTEM: "system", // ollama is installed on the system
@@ -38,7 +39,7 @@ class Ollama {
       return OllamaServeType.SYSTEM;
     } catch (err) {
       // this is fine, we just need to start ollama
-      console.log(err);
+      logInfo(`Ollama is not running: ${err}`);
     }
 
     try {
@@ -47,7 +48,7 @@ class Ollama {
       return OllamaServeType.SYSTEM;
     } catch (err) {
       // ollama is not installed, run the binary directly
-      console.log(`exec ollama: ${err}`);
+      logInfo(`Ollama is not installed on the system: ${err}`);
     }
 
     // start the packaged ollama server
@@ -81,6 +82,7 @@ class Ollama {
       await this.execServe(pathToBinary, appDataPath);
       return OllamaServeType.PACKAGED;
     } catch (err) {
+      logErr(`Failed to start Ollama: ${err}`);
       throw new Error(`Failed to start Ollama: ${err}`);
     }
   }
@@ -98,9 +100,9 @@ class Ollama {
       this.childProcess = exec(
         path + " serve",
         { env },
-        (error, stdout, stderr) => {
-          if (error) {
-            reject(`exec error: ${error}`);
+        (err, stdout, stderr) => {
+          if (err) {
+            reject(`exec error: ${err}`);
             return;
           }
 
@@ -142,6 +144,7 @@ class Ollama {
       let err = `HTTP Error (${response.status}): `;
       err += await response.text();
 
+      logErr('pull failed: ' + err);
       throw new Error(err);
     }
 
@@ -188,7 +191,7 @@ class Ollama {
       // This makes sure the child process isn't left running
       exec(`taskkill /pid ${this.childProcess.pid} /f /t`, (err) => {
         if (err) {
-          console.error(
+          logErr(
             `Failed to kill process ${this.childProcess.pid}: ${err}`
           );
         }
@@ -230,7 +233,7 @@ class Ollama {
       throw new Error("Failed to ping Ollama server");
     }
 
-    console.log("Ollama server is running");
+    logInfo("Ollama server is running");
 
     return true;
   }
@@ -246,11 +249,13 @@ class Ollama {
       try {
         await this.ping();
         return;
-      } catch (error) {
-        console.log("Waiting for Ollama server...");
+      } catch (err) {
+        logInfo("Waiting for Ollama server...");
+        logInfo(err);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
+    logErr("Max retries reached. Ollama server didn't respond.");
     throw new Error("Max retries reached. Ollama server didn't respond.");
   }
 
@@ -283,6 +288,7 @@ class Ollama {
       let err = `HTTP Error (${response.status}): `;
       err += await response.text();
 
+      logErr('chat failed: ' + err);
       throw new Error(err);
     }
 
@@ -296,6 +302,7 @@ class Ollama {
       if (done) {
         // We break before reaching here
         // This means the prompt is not finished (maybe crashed?)
+        logErr("failed to fulfill prompt");
         throw new Error("Failed to fulfill prompt");
       }
 
