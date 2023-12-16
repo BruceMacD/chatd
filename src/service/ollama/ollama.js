@@ -158,7 +158,8 @@ class Ollama {
       if (done) {
         // We break before reaching here
         // This means the prompt is not finished (maybe crashed?)
-        throw new Error("Failed to fulfill prompt");
+        logErr("failed to pull");
+        throw new Error("failed to pull");
       }
 
       // Parse responses are they are received from the Ollama server
@@ -176,7 +177,15 @@ class Ollama {
   }
 
   async run(model, fn) {
-    await this.pull(model, fn);
+    try {
+        await this.pull(model, fn);
+    } catch (err) {
+      logErr('failed to pull before run: ' + err);
+      if (!err.message.includes("failed to pull")) {
+        throw err;
+      }
+      logInfo('chatd is running offline, failed to pull');
+    }
     await this.generate(model, "", fn);
     this.context = null;
   }
@@ -302,8 +311,8 @@ class Ollama {
       if (done) {
         // We break before reaching here
         // This means the prompt is not finished (maybe crashed?)
-        logErr("failed to fulfill prompt");
-        throw new Error("Failed to fulfill prompt");
+        logErr("failed to generate response");
+        throw new Error("Failed to generate response");
       }
 
       // Parse responses are they are received from the Ollama server
