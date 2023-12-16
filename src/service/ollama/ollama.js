@@ -73,6 +73,7 @@ class Ollama {
         appDataPath = path.join(os.homedir(), ".config", "chatd");
         break;
       default:
+        logErr(`unsupported platform: ${process.platform}`);
         reject(new Error(`Unsupported platform: ${process.platform}`));
         return;
     }
@@ -239,10 +240,10 @@ class Ollama {
     });
 
     if (response.status !== 200) {
-      throw new Error("Failed to ping Ollama server");
+      throw new Error(`failed to ping ollama server: ${response.status}`);
     }
 
-    logInfo("Ollama server is running");
+    logInfo("ollama server is running");
 
     return true;
   }
@@ -259,12 +260,12 @@ class Ollama {
         await this.ping();
         return;
       } catch (err) {
-        logInfo("Waiting for Ollama server...");
+        logInfo("waiting for ollama server...");
         logInfo(err);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
-    logErr("Max retries reached. Ollama server didn't respond.");
+    logErr("max retries reached. Ollama server didn't respond.");
     throw new Error("Max retries reached. Ollama server didn't respond.");
   }
 
@@ -297,7 +298,7 @@ class Ollama {
       let err = `HTTP Error (${response.status}): `;
       err += await response.text();
 
-      logErr('chat failed: ' + err);
+      logErr('chat failed request failed: ' + err);
       throw new Error(err);
     }
 
