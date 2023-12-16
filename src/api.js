@@ -64,7 +64,8 @@ async function runOllamaModel(event, msg) {
 
 async function sendChat(event, msg) {
   let prompt = msg;
-  if (vectorStoreSize() > 0) {
+  const size = await vectorStoreSize();
+  if (size > 0) {
     const msgEmbeds = await embed({
       data: [
         {
@@ -73,9 +74,9 @@ async function sendChat(event, msg) {
         },
       ],
     });
-    const searchResult = search(msgEmbeds[0].embedding, 20);
+    const searchResults = await search(msgEmbeds[0].embedding, 20);
     // format the system context search results
-    let documentString = searchResult.join("\n\n");
+    let documentString = searchResults.join("\n\n");
     // Ensure the contextString does not exceed 500 characters
     if (documentString.length > 500) {
       documentString = documentString.substring(0, 497) + "...";

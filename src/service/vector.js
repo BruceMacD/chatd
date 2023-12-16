@@ -1,75 +1,77 @@
-// Dynamically import the ml-distance library
-let ml_distance;
-import("ml-distance").then((module) => {
-  ml_distance = module;
-});
+const { create, count, insert, searchVector } = require("@orama/orama")
 
-class MemoryVector {
-  constructor(document, embedding) {
-    this.document = document;
-    this.embedding = embedding;
-  }
-}
-
-class MemoryVectorStore {
-  memoryVectors = [];
-  similarity = null;
-
+class VectorStore {
   static instance = null;
 
-  constructor() {
-    if (ml_distance) {
-      this.similarity = ml_distance.similarity.cosine;
-    }
+  constructor(db) {
+    this.db = db;
   }
 
-  static getMemoryVectorStore() {
+  static async getVectorStore() {
     if (this.instance === null) {
-      this.instance = new this();
+      const db = await create({
+        schema: {
+          text: 'string',
+          embedding: 'vector[384]', // vector size must be expressed during schema initialization, all-MiniLM-L6-v2 is 384
+          // TODO: add meta data to schema
+        },
+      });
+      this.instance = new this(db);
     }
     return this.instance;
   }
 
-  addEmbeddings(embeddings) {
-    const vectors = embeddings.map((item) => {
-      return new MemoryVector(item.content, item.embedding);
+  async addEmbeddings(embeddings) {
+    for (const embedding of embeddings) {
+      await insert(this.db, {
+        content: embedding.content,
+        embedding: embedding.embedding,
+        // TODO: add meta data
+      });
+    }
+  }
+
+  async search(embedding, limit) {
+    const searchResult = await searchVector(this.db, {
+      vector: embedding,
+      property: 'embedding',
+      limit: limit,
     });
-    this.memoryVectors = this.memoryVectors.concat(vectors);
+    // parse the search result to a text array
+    let results = [];
+    for (const hit of searchResult.hits) {
+      results.push(hit.document.content);
+    }
+    return results;
   }
 
   clear() {
-    this.memoryVectors = [];
+    this.instance = null;
   }
 
-  similaritySearchVector(query, k) {
-    const results = this.memoryVectors.map((vector) => ({
-      similarity: this.similarity(query, vector.embedding),
-      document: vector.document,
-    }));
-
-    results.sort((a, b) => (a.similarity > b.similarity ? -1 : 1));
-
-    return results.slice(0, k).map((result) => result.document);
+  async size() {
+    return await count(this.db);
   }
 }
 
-function clearVectorStore() {
-  MemoryVectorStore.getMemoryVectorStore().clear();
+async function clearVectorStore() {
+  const store = await VectorStore.getVectorStore();
+  store.clear();
 }
 
 async function store(embeddings) {
-  const store = MemoryVectorStore.getMemoryVectorStore();
-  return store.addEmbeddings(embeddings);
+  const vectorStore = await VectorStore.getVectorStore();
+  vectorStore.addEmbeddings(embeddings);
 }
 
-function search(embedding, k) {
-  const store = MemoryVectorStore.getMemoryVectorStore();
-  return store.similaritySearchVector(embedding, k);
+async function search(embedding, limit) {
+  const vectorStore = await VectorStore.getVectorStore();
+  return vectorStore.search(embedding, limit);
 }
 
-function vectorStoreSize() {
-  const store = MemoryVectorStore.getMemoryVectorStore();
-  return store.memoryVectors.length;
+async function vectorStoreSize() {
+  const vectorStore = await VectorStore.getVectorStore();
+  return vectorStore.size();
 }
 
 module.exports = {

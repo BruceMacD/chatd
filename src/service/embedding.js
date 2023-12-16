@@ -2,7 +2,7 @@
 
 class ExtractorPipeline {
   static task = "feature-extraction";
-  static model = "Xenova/all-MiniLM-L6-v2";
+  static model = "Xenova/all-MiniLM-L6-v2"; // if you want to use a different model, change the vector size in the vector store
   static instance = null;
 
   static async getInstance(progress_callback = null) {
