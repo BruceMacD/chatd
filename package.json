@@ -20,7 +20,6 @@
     "electron-squirrel-startup": "^1.0.0",
     "langchain": "^0.0.170",
     "mammoth": "^1.6.0",
-    "ml-distance": "^4.0.1",
     "odt2html": "^1.0.1",
     "pdf-parse": "^1.1.1",
     "winston": "^3.11.0"
