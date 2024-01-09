@@ -36,7 +36,7 @@ async function runOllamaModel(event, msg) {
     await run(model, (json) => {
       // status will be set if the model is downloading
       if (json.status) {
-        if (json.status.includes("downloading")) {
+        if (json.status.includes("pulling")) {
           const percent = Math.round((json.completed / json.total) * 100);
           const content = isNaN(percent)
             ? "Downloading AI model..."

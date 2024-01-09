@@ -131,6 +131,8 @@ class Ollama {
   }
 
   async pull(model, fn) {
+    logInfo("pulling model: " + model);
+
     const body = JSON.stringify({
       name: model,
     });
