@@ -1,4 +1,4 @@
-const { create, count, insert, searchVector } = require("@orama/orama")
+const { create, count, insertMultiple, searchVector } = require("@orama/orama")
 
 class VectorStore {
   static instance = null;
@@ -22,11 +22,13 @@ class VectorStore {
   }
 
   async addEmbeddings(embeddings) {
-    await Promise.all(embeddings.map(embedding => insert(this.db, {
+    const items = embeddings.map(embedding => ({
       content: embedding.content,
       embedding: embedding.embedding,
       // ...meta data...
-    })));
+    }));
+  
+    await insertMultiple(this.db, items);
   }
 
   async search(embedding, limit) {
