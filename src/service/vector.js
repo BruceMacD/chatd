@@ -22,19 +22,18 @@ class VectorStore {
   }
 
   async addEmbeddings(embeddings) {
-    for (const embedding of embeddings) {
-      await insert(this.db, {
-        content: embedding.content,
-        embedding: embedding.embedding,
-        // TODO: add meta data
-      });
-    }
+    await Promise.all(embeddings.map(embedding => insert(this.db, {
+      content: embedding.content,
+      embedding: embedding.embedding,
+      // ...meta data...
+    })));
   }
 
   async search(embedding, limit) {
     const searchResult = await searchVector(this.db, {
       vector: embedding,
       property: 'embedding',
+      similarity: 0.1, // get as many results as possible
       limit: limit,
     });
     // parse the search result to a text array
@@ -61,17 +60,19 @@ async function clearVectorStore() {
 
 async function store(embeddings) {
   const vectorStore = await VectorStore.getVectorStore();
-  vectorStore.addEmbeddings(embeddings);
+  await vectorStore.addEmbeddings(embeddings);
 }
 
 async function search(embedding, limit) {
   const vectorStore = await VectorStore.getVectorStore();
-  return vectorStore.search(embedding, limit);
+  const result = await vectorStore.search(embedding, limit);
+  return result;
 }
 
 async function vectorStoreSize() {
   const vectorStore = await VectorStore.getVectorStore();
-  return vectorStore.size();
+  const size = await vectorStore.size();
+  return size;
 }
 
 module.exports = {
