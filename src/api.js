@@ -1,4 +1,4 @@
-const { openFile } = require("./service/document/reader.js");
+const { loadFile } = require("./service/document/reader.js");
 const { embed } = require("./service/embedding.js");
 const {
   store,
@@ -118,7 +118,7 @@ async function loadDocument(event) {
     clearVectorStore();
 
     // read the document
-    const doc = await openFile();
+    const doc = await loadFile();
     if (doc.data.length === 0) {
       return;
     }
@@ -131,6 +131,8 @@ async function loadDocument(event) {
         debugLog(section.content);
       }
     }
+
+    // TODO: augment the data here using function calling
     const embeddings = await embed(doc);
 
     // store the embeddings

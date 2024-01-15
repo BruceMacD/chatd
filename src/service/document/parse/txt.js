@@ -19,7 +19,7 @@ function parseTxt(data) {
   // TODO: add metadata and info here too as keys in map (see md.js)
   return [
     {
-      section: "",
+      section: content[0], // make the first sentence the section name
       content: content,
     },
   ];

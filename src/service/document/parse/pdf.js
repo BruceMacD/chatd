@@ -1,23 +1,14 @@
 const path = require("path");
 const fs = require("fs").promises;
-const pdf = require("pdf-parse");
-const { splitText } = require("./clean");
+const pdf2md = require('@opendocsg/pdf2md');
+const { parseMd } = require("./md");
 
 async function parsePdf(filePath) {
-  const dataBuffer = await fs.readFile(filePath);
-  const data = await pdf(dataBuffer);
-
-  // TODO: add metadata and info here too as keys in map (see md.js)
-
+  const pdfBuffer = await fs.readFile(filePath);
+  const md = await pdf2md(pdfBuffer);
   return {
-    // TODO: Look at adding section metadata and info here too
     fileName: path.basename(filePath),
-    data: [
-      {
-        section: "",
-        content: splitText(data.text),
-      },
-    ],
+    data: parseMd(md),
   };
 }
 

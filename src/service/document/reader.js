@@ -3,7 +3,7 @@ const fs = require("fs").promises;
 const { dialog } = require("electron");
 const { parsePdf, parseMd, parseOdt, parseTxt, parseDocx } = require("./parse");
 
-async function openFile() {
+async function loadFile() {
   const options = {
     properties: ["openFile"],
     filters: [
@@ -54,5 +54,5 @@ async function openFile() {
 }
 
 module.exports = {
-  openFile,
+  loadFile,
 };
