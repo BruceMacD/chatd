@@ -9,7 +9,7 @@ async function loadFile() {
     filters: [
       {
         name: "Text Files",
-        extensions: ["docx", "md", "odt", "pdf", "txt"],
+        extensions: ["docx", "md", "odt", "pdf", "txt", "html", "htm"],
       },
     ],
   };
