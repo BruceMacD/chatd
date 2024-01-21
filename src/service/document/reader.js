@@ -1,26 +1,8 @@
 const path = require("path");
 const fs = require("fs").promises;
-const { dialog } = require("electron");
 const { parsePdf, parseMd, parseOdt, parseTxt, parseDocx } = require("./parse");
 
-async function loadFile() {
-  const options = {
-    properties: ["openFile"],
-    filters: [
-      {
-        name: "Text Files",
-        extensions: ["docx", "md", "odt", "pdf", "txt", "html", "htm"],
-      },
-    ],
-  };
-
-  const result = await dialog.showOpenDialog(options);
-
-  if (result.canceled || result.filePaths.length === 0) {
-    throw new Error("No file selected");
-  }
-
-  const filePath = result.filePaths[0];
+async function loadFile(filePath) {
   const fileExtension = path.extname(filePath).toLowerCase();
 
   switch (fileExtension) {

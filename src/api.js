@@ -1,4 +1,6 @@
-const { loadFile } = require("./service/document/reader.js");
+const { Worker } = require('worker_threads');
+const { dialog } = require("electron");
+const path = require("path");
 const { embed } = require("./service/embedding.js");
 const {
   store,
@@ -116,33 +118,49 @@ function stopChat() {
 async function loadDocument(event) {
   try {
     clearVectorStore();
-
-    // read the document
-    const doc = await loadFile();
-    if (doc.data.length === 0) {
-      return;
-    }
-
-    // get the embeddings for the document content
-    if (doc && doc.data) {
-      debugLog("Parsed content...");
-      for (const section of doc.data) {
-        debugLog(section.section);
-        debugLog(section.content);
-      }
-    }
-
-    // TODO: augment the data here using function calling
-    const embeddings = await embed(doc);
-
-    // store the embeddings
-    store(embeddings);
-
-    event.reply("doc:load", { success: true, content: doc.fileName });
+    const filePath = await selectDocumentFile();
+    debugLog(`Loading file: ${filePath}`);
+    processDocument(filePath, event);
   } catch (err) {
-    console.log(err);
-    event.reply("doc:load", { success: false, content: err.message });
+    handleDocumentLoadError(err, event);
   }
+}
+
+async function selectDocumentFile() {
+  const options = {
+    properties: ["openFile"],
+    filters: [{ name: "Text Files", extensions: ["docx", "md", "odt", "pdf", "txt", "html", "htm"] }],
+  };
+
+  const result = await dialog.showOpenDialog(options);
+  if (result.canceled || result.filePaths.length === 0) {
+    throw new Error("No file selected");
+  }
+
+  return result.filePaths[0];
+}
+
+function processDocument(filePath, event) {
+  const worker = new Worker('./src/service/worker.js');
+  worker.postMessage(filePath);
+
+  worker.on('message', async (e) => {
+    if (e.success) {
+      debugLog("Storing embeddings...");
+      await store(e.embeddings);
+      debugLog("Embeddings stored");
+      event.reply("doc:load", { success: true, content: path.basename(filePath) });
+    } else {
+      event.reply("doc:load", { success: false, content: e.content });
+    }
+  });
+
+  worker.on('error', err => handleDocumentLoadError(err, event));
+}
+
+function handleDocumentLoadError(err, event) {
+  console.log('Error:', err);
+  event.reply("doc:load", { success: false, content: err.message });
 }
 
 async function serveOllama(event) {
