@@ -1,10 +1,11 @@
 const { loadFile } = require("./service/document/reader.js");
 const { embed } = require("./service/embedding.js");
+const { extract } = require("./service/extract.js");
 const {
   store,
   search,
-  clearVectorStore,
   vectorStoreSize,
+  clearVectorStore,
 } = require("./service/vector.js");
 const {
   abort,
@@ -132,7 +133,9 @@ async function loadDocument(event) {
       }
     }
 
-    // TODO: augment the data here using function calling
+    // augment the data by extracting and generating additional information
+    await extract(model, doc);
+
     const embeddings = await embed(doc);
 
     // store the embeddings
