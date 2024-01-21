@@ -17,6 +17,7 @@ const {
 } = require("./service/ollama/ollama.js");
 
 let model = "mistral";
+let loadingDoc = false;
 
 function debugLog(msg) {
   if (global.debug) {
@@ -98,6 +99,9 @@ Anything between the following \`user\` html blocks is is part of the conversati
 </user>
 `;
   }
+  if (loadingDoc) {
+    prompt += "Start your response by saying some variation on 'The document is still process, but I will answer to the best of my abilities.'.";
+  }
   try {
     debugLog("Sending prompt to Ollama...");
     debugLog(prompt);
@@ -116,6 +120,7 @@ function stopChat() {
 }
 
 async function loadDocument(event) {
+  loadingDoc = true;
   try {
     clearVectorStore();
     const filePath = await selectDocumentFile();
@@ -150,8 +155,10 @@ function processDocument(filePath, event) {
       await store(e.embeddings);
       debugLog("Embeddings stored");
       event.reply("doc:load", { success: true, content: path.basename(filePath) });
+      loadingDoc = false;
     } else {
       event.reply("doc:load", { success: false, content: e.content });
+      loadingDoc = false;
     }
   });
 
@@ -159,6 +166,7 @@ function processDocument(filePath, event) {
 }
 
 function handleDocumentLoadError(err, event) {
+  loadingDoc = false;
   console.log('Error:', err);
   event.reply("doc:load", { success: false, content: err.message });
 }
