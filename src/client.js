@@ -265,4 +265,5 @@ settingsSaveBtn.addEventListener("click", () => {
 userInput.addEventListener("input", function () {
   this.style.height = "auto";
   this.style.height = this.scrollHeight + "px";
+  chatView.scrollTop = chatView.scrollHeight; // scroll to bottom of the screen
 });
