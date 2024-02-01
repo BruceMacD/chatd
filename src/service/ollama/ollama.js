@@ -9,19 +9,29 @@ var OllamaServeType = {
   PACKAGED: "packaged", // ollama is packaged with the app
 };
 
-class Ollama {
+class OllamaOrchestrator {
   static instance = null;
   static context = null; // stores the chat history for the current session
 
-  constructor() {
+  constructor(ollamaModule) {
     this.childProcess = null;
     this.host = "http://127.0.0.1:11434"; // TODO: check OLLAMA_HOST env var
     this.abort = new AbortController();
+    this.abortableFetch = this.abortableFetch.bind(this);
+
+    this.ollama = new ollamaModule.Ollama(this.abortableFetch);
   }
 
-  static getOllama() {
+  // Make it possible to abort a fetch
+  abortableFetch(url, options = {}) {
+    const newOptions = { ...options, signal: this.abort.signal };
+    return fetch(url, newOptions);
+  }
+
+  static async getOllama() {
     if (this.instance === null) {
-      this.instance = new this();
+      const ollamaModule = await import("ollama");
+      this.instance = new this(ollamaModule);
     }
     return this.instance;
   }
@@ -132,50 +142,9 @@ class Ollama {
 
   async pull(model, fn) {
     logInfo("pulling model: " + model);
-
-    const body = JSON.stringify({
-      name: model,
-    });
-
-    const response = await fetch(this.host + "/api/pull", {
-      method: "POST",
-      body,
-      cache: "no-store",
-    });
-
-    if (response.status !== 200) {
-      let err = `HTTP Error (${response.status}): `;
-      err += await response.text();
-
-      logErr('pull failed: ' + err);
-      throw new Error(err);
-    }
-
-    const reader = response.body.getReader();
-
-    // Reads the stream until the pull is complete
-    // or when the stream is closed by the server
-    while (true) {
-      const { done, value } = await reader.read();
-
-      if (done) {
-        // We break before reaching here
-        // This means the prompt is not finished (maybe crashed?)
-        logErr("failed to pull");
-        throw new Error("failed to pull");
-      }
-
-      // Parse responses are they are received from the Ollama server
-      for (const buffer of this.parse(value)) {
-        const json = JSON.parse(buffer);
-
-        fn(json);
-
-        if (json.status == "success") {
-          // done
-          return;
-        }
-      }
+    const stream = await this.ollama.pull({model: model, stream: true});
+    for await (const part of stream) {
+      fn(part);
     }
   }
 
@@ -184,7 +153,7 @@ class Ollama {
         await this.pull(model, fn);
     } catch (err) {
       logErr('failed to pull before run: ' + err);
-      if (!err.message.includes("failed to pull")) {
+      if (!err.message.includes("pull model manifest")) {
         throw err;
       }
       logInfo('chatd is running offline, failed to pull');
@@ -283,52 +252,9 @@ class Ollama {
    * @return {Promise<undefined>}
    */
   async generate(model, prompt, fn) {
-    const body = JSON.stringify({
-      model: model,
-      prompt: prompt,
-      context: this.context,
-    });
-
-    const response = await fetch(this.host + "/api/generate", {
-      method: "POST",
-      body,
-      cache: "no-store",
-      signal: this.abort.signal,
-    });
-
-    if (response.status !== 200) {
-      let err = `HTTP Error (${response.status}): `;
-      err += await response.text();
-
-      logErr('chat failed request failed: ' + err);
-      throw new Error(err);
-    }
-
-    const reader = response.body.getReader();
-
-    // Reads the stream until the prompt is fulfilled
-    //  or when the stream is closed by the server
-    while (true) {
-      const { done, value } = await reader.read();
-
-      if (done) {
-        // We break before reaching here
-        // This means the prompt is not finished (maybe crashed?)
-        logErr("failed to generate response");
-        throw new Error("Failed to generate response");
-      }
-
-      // Parse responses are they are received from the Ollama server
-      for (const buffer of this.parse(value)) {
-        const json = JSON.parse(buffer);
-
-        fn(json);
-
-        if (json.done) {
-          this.context = json.context;
-          return;
-        }
-      }
+    const stream = await this.ollama.generate({model: model, prompt: prompt, stream: true});
+    for await (const part of stream) {
+      fn(part);
     }
   }
 
@@ -344,37 +270,37 @@ class Ollama {
 }
 
 async function run(model, fn) {
-  const ollama = Ollama.getOllama();
+  const ollama = await OllamaOrchestrator.getOllama();
   return await ollama.run(model, fn);
 }
 
 async function generate(model, prompt, fn) {
-  const ollama = Ollama.getOllama();
+  const ollama = await OllamaOrchestrator.getOllama();
   return await ollama.generate(model, prompt, fn);
 }
 
-function abort() {
-  const ollama = Ollama.getOllama();
+async function abort() {
+  const ollama = await OllamaOrchestrator.getOllama();
   return ollama.abortRequest();
 }
 
 async function ping() {
-  const ollama = Ollama.getOllama();
+  const ollama = await OllamaOrchestrator.getOllama();
   return await ollama.ping();
 }
 
-function clearHistory() {
-  const ollama = Ollama.getOllama();
+async function clearHistory() {
+  const ollama = await OllamaOrchestrator.getOllama();
   return ollama.clearHistory();
 }
 
-function stop() {
-  const ollama = Ollama.getOllama();
+async function stop() {
+  const ollama = await OllamaOrchestrator.getOllama();
   return ollama.stop();
 }
 
-function serve() {
-  const ollama = Ollama.getOllama();
+async function serve() {
+  const ollama = await OllamaOrchestrator.getOllama();
   return ollama.serve();
 }
 
