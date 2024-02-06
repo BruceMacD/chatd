@@ -22,7 +22,7 @@
     "langchain": "^0.0.170",
     "mammoth": "^1.6.0",
     "odt2html": "^1.0.1",
-    "ollama": "^0.4.4",
+    "ollama": "^0.4.6",
     "winston": "^3.11.0"
   },
   "devDependencies": {
