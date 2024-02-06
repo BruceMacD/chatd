@@ -16,16 +16,7 @@ class OllamaOrchestrator {
   constructor(ollamaModule) {
     this.childProcess = null;
     this.host = "http://127.0.0.1:11434"; // TODO: check OLLAMA_HOST env var
-    this.abort = new AbortController();
-    this.abortableFetch = this.abortableFetch.bind(this);
-
-    this.ollama = new ollamaModule.Ollama(this.abortableFetch);
-  }
-
-  // Make it possible to abort a fetch
-  abortableFetch(url, options = {}) {
-    const newOptions = { ...options, signal: this.abort.signal };
-    return fetch(url, newOptions);
+    this.ollama = new ollamaModule.Ollama();
   }
 
   static async getOllama() {
@@ -252,9 +243,18 @@ class OllamaOrchestrator {
    * @return {Promise<undefined>}
    */
   async generate(model, prompt, fn) {
-    const stream = await this.ollama.generate({model: model, prompt: prompt, stream: true});
-    for await (const part of stream) {
-      fn(part);
+    try {
+      const stream = await this.ollama.generate({model: model, prompt: prompt, stream: true});
+      for await (const part of stream) {
+        fn(part);
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        // this is expected if user presses the stop button, continue
+      } else {
+        // rethrow
+        throw error;
+      }
     }
   }
 
@@ -262,10 +262,7 @@ class OllamaOrchestrator {
    * Aborts the current request.
    */
   abortRequest() {
-    if (this.abort) {
-      this.abort.abort();
-      this.abort = new AbortController();
-    }
+    this.ollama.abort();
   }
 }
 
