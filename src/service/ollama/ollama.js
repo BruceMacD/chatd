@@ -175,10 +175,6 @@ class OllamaOrchestrator {
     this.childProcess = null;
   }
 
-  clearHistory() {
-    this.context = null;
-  }
-
   /**
    * Parses the buffer of a stream response.
    *
@@ -281,16 +277,6 @@ async function abort() {
   return ollama.abortRequest();
 }
 
-async function ping() {
-  const ollama = await OllamaOrchestrator.getOllama();
-  return await ollama.ping();
-}
-
-async function clearHistory() {
-  const ollama = await OllamaOrchestrator.getOllama();
-  return ollama.clearHistory();
-}
-
 async function stop() {
   const ollama = await OllamaOrchestrator.getOllama();
   return ollama.stop();
@@ -305,8 +291,6 @@ module.exports = {
   run,
   generate,
   abort,
-  ping,
-  clearHistory,
   stop,
   serve,
 };
