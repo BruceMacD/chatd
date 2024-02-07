@@ -115,8 +115,8 @@ Anything between the following \`user\` html blocks is is part of the conversati
   }
 }
 
-function stopChat() {
-  abort();
+async function stopChat() {
+  await abort();
 }
 
 async function loadDocument(event) {
