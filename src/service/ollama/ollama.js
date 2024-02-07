@@ -11,7 +11,7 @@ var OllamaServeType = {
 
 class OllamaOrchestrator {
   static instance = null;
-  static context = null; // stores the chat history for the current session
+  static messages = []; // stores the chat message history for the current session
 
   constructor(ollamaModule) {
     this.childProcess = null;
@@ -173,17 +173,6 @@ class OllamaOrchestrator {
     }
 
     this.childProcess = null;
-  }
-
-  /**
-   * Parses the buffer of a stream response.
-   *
-   * @param {Uint8Array} value
-   *
-   * @return {Array} Each item in the array is the contents of a new line.
-   */
-  parse(value) {
-    return new TextDecoder().decode(value).trim().split(/\r?\n/);
   }
 
   /**
