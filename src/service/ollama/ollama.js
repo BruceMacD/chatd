@@ -11,10 +11,10 @@ var OllamaServeType = {
 
 class OllamaOrchestrator {
   static instance = null;
-  static messages = []; // stores the chat message history for the current session
 
   constructor(ollamaModule) {
     this.childProcess = null;
+    this.messages = []; // stores the chat message history for the current session
     this.host = "http://127.0.0.1:11434"; // TODO: check OLLAMA_HOST env var
     this.ollama = new ollamaModule.Ollama();
   }
@@ -149,8 +149,10 @@ class OllamaOrchestrator {
       }
       logInfo('chatd is running offline, failed to pull');
     }
-    await this.generate(model, "", fn);
-    this.context = null;
+    // load the model
+    const loaded = await this.ollama.chat({model: model});
+    // all done, return the loaded event to the callback
+    fn(loaded);
   }
 
   stop() {
@@ -217,20 +219,30 @@ class OllamaOrchestrator {
   }
 
   /**
-   * Sends a prompt to the LLM, parses the stream and runs a callback.
+   * Sends a chat to the LLM and runs a callback.
    *
    * @param {string}   model   One of the installed models to use, e.g: 'llama2'.
-   * @param {string}   prompt  The question to ask the LLM.
+   * @param {string}   prompt  The user message for the LLM.
    * @param {function} fn      The callback to run on each line of the response.
    *
    * @throws {Error|AbortError}
    *
    * @return {Promise<undefined>}
    */
-  async generate(model, prompt, fn) {
+  async chat(model, prompt, fn) {
+    this.messages.push({
+      "role": "user",
+      "content": prompt
+    });
+
+    let assistant = {
+      "role": "assistant",
+      "content": ""
+    }
     try {
-      const stream = await this.ollama.generate({model: model, prompt: prompt, stream: true});
+      const stream = await this.ollama.chat({model: model, messages: this.messages, stream: true});
       for await (const part of stream) {
+        assistant.content += part.message.content;
         fn(part);
       }
     } catch (error) {
@@ -241,6 +253,7 @@ class OllamaOrchestrator {
         throw error;
       }
     }
+    this.messages.push(assistant);
   }
 
   /**
@@ -256,9 +269,9 @@ async function run(model, fn) {
   return await ollama.run(model, fn);
 }
 
-async function generate(model, prompt, fn) {
+async function chat(model, prompt, fn) {
   const ollama = await OllamaOrchestrator.getOllama();
-  return await ollama.generate(model, prompt, fn);
+  return await ollama.chat(model, prompt, fn);
 }
 
 async function abort() {
@@ -278,7 +291,7 @@ async function serve() {
 
 module.exports = {
   run,
-  generate,
+  chat,
   abort,
   stop,
   serve,
