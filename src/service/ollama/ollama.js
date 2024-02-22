@@ -16,7 +16,7 @@ class OllamaOrchestrator {
     this.childProcess = null;
     this.messages = []; // stores the chat message history for the current session
     this.host = "http://127.0.0.1:11434"; // TODO: check OLLAMA_HOST env var
-    this.ollama = new ollamaModule.Ollama();
+    this.ollama = new ollamaModule.Ollama({ host: this.host });
   }
 
   static async getOllama() {
