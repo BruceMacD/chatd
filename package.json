@@ -16,7 +16,7 @@
   "license": "MIT",
   "dependencies": {
     "@opendocsg/pdf2md": "^0.1.28",
-    "@orama/orama": "^2.0.0-beta.10",
+    "@orama/orama": "^2.0.7",
     "@xenova/transformers": "^2.6.2",
     "electron-squirrel-startup": "^1.0.0",
     "langchain": "^0.0.170",

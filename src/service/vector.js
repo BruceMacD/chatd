@@ -1,4 +1,4 @@
-const { create, count, insertMultiple, searchVector } = require("@orama/orama")
+const { create, count, insertMultiple, search: oramaSearch } = require("@orama/orama")
 
 class VectorStore {
   static instance = null;
@@ -32,9 +32,12 @@ class VectorStore {
   }
 
   async search(embedding, limit) {
-    const searchResult = await searchVector(this.db, {
-      vector: embedding,
-      property: 'embedding',
+    const searchResult = await oramaSearch(this.db, {
+      mode: 'vector',
+      vector: {
+        value: embedding,
+        property: 'embedding',
+      },
       similarity: 0.1, // get as many results as possible
       limit: limit,
     });
