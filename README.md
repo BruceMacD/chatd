@@ -45,7 +45,7 @@ npm run start
 
 ### MacOS
 
-1. Download the latest `ollama-darwin` release for MacOS from [here](https://github.com/jmorganca/ollama/releases).
+1. Download the latest `ollama-darwin` release for MacOS from [here](https://github.com/ollama/ollama/releases).
 2. Make the downloaded binary executable: `chmod +x path/to/ollama-darwin`
 3. Copy the `ollama-darwin` executable to the `chatd/src/service/ollama/runners` directory.
 4. Optional: The Electron app needs be signed to be able to run on MacOS systems other than the one it was compiled on, so you need a developer certificate. To sign the app, set the following environment variables:
@@ -63,14 +63,14 @@ You can find your Apple ID, Apple Team ID, and Apple ID Application in your Appl
 
 ### Windows
 
-1. Build Ollama from source for Windows, this will support CPU only. See [here](https://github.com/jmorganca/ollama).
-2. Copy the `ollama.exe` executable to `chatd/src/service/ollama/runners/ollama.exe`.
+1. Download the latest `ollama-windows-amd64.zip` release from [here](https://github.com/ollama/ollama/releases).
+2. Copy the contents of the zip into `chatd/src/service/ollama/runners/`.
 3. Run `npm run package` to package the app.
 
 Note: The Windows app is not signed, so you will get a warning when you run it.
 
 ### Linux
 
-1. Build Ollama from source for Linux x64 to support CPU only, this allows for a smaller executable package. See [here](https://github.com/jmorganca/ollama).
+1. Download the latest `ollama-linux-amd64` release from [here](https://github.com/ollama/ollama/releases).
 2. Copy the `ollama` executable to `chatd/src/service/ollama/runners/ollama-linux`.
 3. Run `npm run package` to package the app.
