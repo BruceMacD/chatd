@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs").promises;
-const { parsePdf, parseMd, parseOdt, parseTxt, parseDocx } = require("./parse");
+const { parsePdf, parseMd, parseOdt, parseTxt, parseDocx, parseHtml } = require("./parse");
 
 async function loadFile(filePath) {
   const fileExtension = path.extname(filePath).toLowerCase();
@@ -25,6 +25,14 @@ async function loadFile(filePath) {
       };
     case ".pdf":
       return await parsePdf(filePath);
+    case ".html":
+    case ".xhtml":
+    case ".htm":
+      let htmlContent = await fs.readFile(filePath, "utf-8");
+      return {
+        fileName: path.basename(filePath),
+        data: await parseHtml(htmlContent),
+      };
     default:
       // just try to parse it as a text file
       let rawText = await fs.readFile(filePath, "utf-8");

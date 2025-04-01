@@ -33,6 +33,19 @@ function extractSectionsAndContent(html) {
     return extractedSections;
 }
 
+async function parseHtml(htmlContent, documentPath) {
+    try {
+        // HTML content doesn't need citations and hyperlinks removed as extractSectionsAndContent handles that
+        const sections = extractSectionsAndContent(htmlContent);
+        // If a document path is provided, preserve it for session reset
+        return documentPath ? preserveDocumentContext(sections, documentPath) : sections;
+    } catch (err) {
+        console.error("Error parsing HTML content:", err);
+        return [];
+    }
+}
+
 module.exports = {
     extractSectionsAndContent,
+    parseHtml,
 };

@@ -11,8 +11,8 @@ async function parseOdt(odtFilePath) {
       return [];
     }
 
-    html = removeCitations(html);
-    html = removeHyperlinks(html);
+    html = removeCitations(html.value); // Ensure .value is used correctly
+    html = removeHyperlinks(html.value);
 
     return extractSectionsAndContent(html);
   } catch (err) {
