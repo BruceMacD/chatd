@@ -146,7 +146,7 @@ async function selectDocumentFile() {
 }
 
 function processDocument(filePath, event) {
-  const worker = new Worker('./src/service/worker.js');
+  const worker = new Worker(path.join(__dirname, 'service/worker.js'));
   worker.postMessage(filePath);
 
   worker.on('message', async (e) => {
