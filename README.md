@@ -73,4 +73,19 @@ Note: The Windows app is not signed, so you will get a warning when you run it.
 
 1. Download the latest `ollama-linux-amd64` release from [here](https://github.com/ollama/ollama/releases).
 2. Copy the `ollama` executable to `chatd/src/service/ollama/runners/ollama-linux`.
-3. Run `npm run package` to package the app.
+3. Create the release archive with Electron Forge:
+
+```bash
+npm run make -- --targets=@electron-forge/maker-zip --platform=linux --arch=x64
+```
+
+4. Verify the unpacked application before publishing:
+
+```bash
+npm run verify:package -- out/chatd-linux-x64
+unzip -t out/make/zip/linux/x64/*.zip
+```
+
+Publish the ZIP from `out/make/zip/linux/x64/` directly. Do not manually
+recompress individual files from `out/chatd-linux-x64`; the application
+requires the populated `locales/` and `resources/app/` directories.

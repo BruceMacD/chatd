@@ -9,6 +9,8 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
+    "test": "node --test test/*.test.js",
+    "verify:package": "node scripts/verify-package.js",
     "lint": "echo \"No linting configured\""
   },
   "keywords": [],
